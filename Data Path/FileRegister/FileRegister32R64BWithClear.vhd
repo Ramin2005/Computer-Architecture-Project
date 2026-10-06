@@ -31,9 +31,9 @@ BEGIN
             END LOOP;
 
         ELSIF rising_edge(CLK) AND WriteEnable = '1' THEN
-
-            Data(to_integer(unsigned(AddressW))) <= DataIn;
-
+            IF unsigned(AddressW) >= 0 THEN
+                Data(to_integer(unsigned(AddressW))) <= DataIn;
+            END IF;
         END IF;
 
     END PROCESS;
