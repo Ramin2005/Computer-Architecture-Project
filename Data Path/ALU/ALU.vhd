@@ -2,33 +2,33 @@
 -- ALUControl: 6-bit operation codes
 
 -- Logic Operations:
--- Buffer       -> opcode: "000000"  -- Pass-through
--- NOT          -> opcode: "000001"  -- Bitwise NOT
--- AND          -> opcode: "000010"  -- Bitwise AND
--- OR           -> opcode: "000011"  -- Bitwise OR
--- XOR          -> opcode: "000100"  -- Bitwise XOR
--- NAND         -> opcode: "000101"  -- NOT (A AND B)
--- NOR          -> opcode: "000110"  -- NOT (A OR B)
--- XNOR         -> opcode: "000111"  -- NOT (A XOR B)
+-- Buffer       -> opcode: "000000"
+-- NOT          -> opcode: "000001"
+-- AND          -> opcode: "000010"
+-- OR           -> opcode: "000011"
+-- XOR          -> opcode: "000100"
+-- NAND         -> opcode: "000101"
+-- NOR          -> opcode: "000110"
+-- XNOR         -> opcode: "000111"
 
 -- Compare Operations:
 -- A == B       -> opcode: "001000"  -- Equal
--- A < B        -> opcode: "001001"  -- Signed less-than (SLT)
--- Un A < B     -> opcode: "001010"  -- Unsigned less-than (SLTU)
--- A <= B       -> opcode: "001011"  -- Signed less-or-equal (custom)
--- Un A <= B    -> opcode: "001100"  -- Unsigned less-or-equal (custom)
+-- A < B        -> opcode: "001001"  -- SLT
+-- Un A < B     -> opcode: "001010"  -- SLTU
+-- A <= B       -> opcode: "001011"
+-- Un A <= B    -> opcode: "001100"
 
 -- Shift and Rotate Operations:
--- SLL          -> opcode: "010000"  -- 64-bit logical shift left
--- SRL          -> opcode: "010001"  -- 64-bit logical shift right
--- SRA          -> opcode: "010010"  -- 64-bit arithmetic shift right
--- ROL          -> opcode: "010011"  -- 64-bit rotate left (custom)
--- ROR          -> opcode: "010100"  -- 64-bit rotate right (custom)
--- SLLW         -> opcode: "010101"  -- 32-bit shift left, sign-extended result
--- SRLW         -> opcode: "010110"  -- 32-bit logical shift right, sign-extended result
--- SRAW         -> opcode: "010111"  -- 32-bit arithmetic shift right, sign-extended result
--- ROLW         -> opcode: "011000"  -- 32-bit rotate left (custom)
--- RORW         -> opcode: "011001"  -- 32-bit rotate right (custom)
+-- SLL          -> opcode: "010000"
+-- SRL          -> opcode: "010001"
+-- SRA          -> opcode: "010010"
+-- ROL          -> opcode: "010011"
+-- ROR          -> opcode: "010100"
+-- SLLW         -> opcode: "010101"
+-- SRLW         -> opcode: "010110"
+-- SRAW         -> opcode: "010111"
+-- ROLW         -> opcode: "011000"
+-- RORW         -> opcode: "011001"
 
 -- Arithmetic Operations:
 -- MUL          -> opcode: "100000"  -- Low 64 bits of product
@@ -44,10 +44,10 @@
 -- DIVW         -> opcode: "101010"  -- Signed 32-bit quotient, sign-extended
 -- REMW         -> opcode: "101011"  -- Signed 32-bit remainder, sign-extended
 -- REMUW        -> opcode: "101100"  -- Unsigned 32-bit remainder, sign-extended
--- ADD          -> opcode: "101101"  -- 64-bit addition
--- SUB          -> opcode: "101110"  -- 64-bit subtraction
--- ADDW         -> opcode: "101111"  -- 32-bit addition, sign-extended
--- SUBW         -> opcode: "110000"  -- 32-bit subtraction, sign-extended
+-- ADD          -> opcode: "101101"
+-- SUB          -> opcode: "101110"
+-- ADDW         -> opcode: "101111"
+-- SUBW         -> opcode: "110000"
 
 LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
@@ -78,15 +78,10 @@ ARCHITECTURE struct OF ALU IS
 
     -- Compare result signals
     SIGNAL ResultEQ : STD_LOGIC_VECTOR(63 DOWNTO 0);
-    SIGNAL ResultNE : STD_LOGIC_VECTOR(63 DOWNTO 0);
-    SIGNAL ResultS : STD_LOGIC_VECTOR(63 DOWNTO 0);
-    SIGNAL ResultUnS : STD_LOGIC_VECTOR(63 DOWNTO 0);
-    SIGNAL ResultG : STD_LOGIC_VECTOR(63 DOWNTO 0);
-    SIGNAL ResultUnG : STD_LOGIC_VECTOR(63 DOWNTO 0);
-    SIGNAL ResultSE : STD_LOGIC_VECTOR(63 DOWNTO 0);
-    SIGNAL ResultUnSE : STD_LOGIC_VECTOR(63 DOWNTO 0);
-    SIGNAL ResultGE : STD_LOGIC_VECTOR(63 DOWNTO 0);
-    SIGNAL ResultUnGE : STD_LOGIC_VECTOR(63 DOWNTO 0);
+    SIGNAL ResultL : STD_LOGIC_VECTOR(63 DOWNTO 0);
+    SIGNAL ResultUnL : STD_LOGIC_VECTOR(63 DOWNTO 0);
+    SIGNAL ResultLE : STD_LOGIC_VECTOR(63 DOWNTO 0);
+    SIGNAL ResultUnLE : STD_LOGIC_VECTOR(63 DOWNTO 0);
 
     -- Arithmetic result signals
     SIGNAL ResultMUL : STD_LOGIC_VECTOR(2 * 63 DOWNTO 0);
@@ -97,19 +92,10 @@ ARCHITECTURE struct OF ALU IS
     SIGNAL ResultUnMOD : STD_LOGIC_VECTOR(63 DOWNTO 0);
     SIGNAL ResultADD : STD_LOGIC_VECTOR(63 DOWNTO 0);
     SIGNAL ResultSUB : STD_LOGIC_VECTOR(63 DOWNTO 0);
-    SIGNAL ResultINC : STD_LOGIC_VECTOR(63 DOWNTO 0);
-    SIGNAL ResultDEC : STD_LOGIC_VECTOR(63 DOWNTO 0);
-    SIGNAL ResultNEG : STD_LOGIC_VECTOR(63 DOWNTO 0);
     SIGNAL CoutADD : STD_LOGIC;
     SIGNAL CoutSUB : STD_LOGIC;
-    SIGNAL CoutINC : STD_LOGIC;
-    SIGNAL CoutDEC : STD_LOGIC;
-    SIGNAL CoutNEG : STD_LOGIC;
     SIGNAL OverflowADD : STD_LOGIC;
     SIGNAL OverflowSUB : STD_LOGIC;
-    SIGNAL OverflowINC : STD_LOGIC;
-    SIGNAL OverflowDEC : STD_LOGIC;
-    SIGNAL OverflowNEG : STD_LOGIC;
 
     -- Shift and Rotating result signals
     SIGNAL ResultSHL : STD_LOGIC_VECTOR(63 DOWNTO 0);
