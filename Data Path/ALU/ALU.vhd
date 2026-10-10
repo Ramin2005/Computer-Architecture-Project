@@ -38,10 +38,10 @@
 -- MULW         -> opcode: "100100"  -- Low 32-bit product, sign-extended
 -- DIV          -> opcode: "100101"  -- Signed 64-bit quotient
 -- DIVU         -> opcode: "100110"  -- Unsigned 64-bit quotient
--- DIVUW        -> opcode: "100111"  -- Unsigned 32-bit quotient, sign-extended
--- REM          -> opcode: "101000"  -- Signed 64-bit remainder
--- REMU         -> opcode: "101001"  -- Unsigned 64-bit remainder
--- DIVW         -> opcode: "101010"  -- Signed 32-bit quotient, sign-extended
+-- DIVW         -> opcode: "100111"  -- Signed 32-bit quotient, sign-extended
+-- DIVUW        -> opcode: "101000"  -- Unsigned 32-bit quotient, sign-extended
+-- REM          -> opcode: "101001"  -- Signed 64-bit remainder
+-- REMU         -> opcode: "101010"  -- Unsigned 64-bit remainder
 -- REMW         -> opcode: "101011"  -- Signed 32-bit remainder, sign-extended
 -- REMUW        -> opcode: "101100"  -- Unsigned 32-bit remainder, sign-extended
 -- ADD          -> opcode: "101101"
@@ -109,10 +109,10 @@ ARCHITECTURE struct OF ALU IS
     SIGNAL ResultMULW : STD_LOGIC_VECTOR(63 DOWNTO 0);
     SIGNAL ResultDIV : STD_LOGIC_VECTOR(63 DOWNTO 0);
     SIGNAL ResultDIVU : STD_LOGIC_VECTOR(63 DOWNTO 0);
+    SIGNAL ResultDIVW : STD_LOGIC_VECTOR(63 DOWNTO 0);
     SIGNAL ResultDIVUW : STD_LOGIC_VECTOR(63 DOWNTO 0);
     SIGNAL ResultREM : STD_LOGIC_VECTOR(63 DOWNTO 0);
     SIGNAL ResultREMU : STD_LOGIC_VECTOR(63 DOWNTO 0);
-    SIGNAL ResultDIVW : STD_LOGIC_VECTOR(63 DOWNTO 0);
     SIGNAL ResultREMW : STD_LOGIC_VECTOR(63 DOWNTO 0);
     SIGNAL ResultREMUW : STD_LOGIC_VECTOR(63 DOWNTO 0);
     SIGNAL ResultADD : STD_LOGIC_VECTOR(63 DOWNTO 0);
@@ -122,10 +122,10 @@ ARCHITECTURE struct OF ALU IS
 
     SIGNAL CoutADD : STD_LOGIC;
     SIGNAL CoutSUB : STD_LOGIC;
-    SIGNAL OverflowADD : STD_LOGIC;
-    SIGNAL OverflowSUB : STD_LOGIC;
     SIGNAL CoutADDW : STD_LOGIC;
     SIGNAL CoutSUBW : STD_LOGIC;
+    SIGNAL OverflowADD : STD_LOGIC;
+    SIGNAL OverflowSUB : STD_LOGIC;
     SIGNAL OverflowADDW : STD_LOGIC;
     SIGNAL OverflowSUBW : STD_LOGIC;
 
@@ -200,22 +200,22 @@ BEGIN
     ResultROR <= A(0) & A(63 DOWNTO 1);
 
     -- SLLW
-    ResultSLLW <= A(63 downto 32) & A(30 DOWNTO 0) & '0';
+    ResultSLLW <= A(63 DOWNTO 32) & A(30 DOWNTO 0) & '0';
     CoutSLLW <= A(31);
 
     -- SRLW
-    ResultSRLW <=  A(63 downto 32) & '0' & A(31 DOWNTO 1);
+    ResultSRLW <= A(63 DOWNTO 32) & '0' & A(31 DOWNTO 1);
     CoutSRLW <= A(0);
 
     -- SRAW
-    ResultSRAW <=  A(63 downto 32) & A(31) & A(31 DOWNTO 1);
+    ResultSRAW <= A(63 DOWNTO 32) & A(31) & A(31 DOWNTO 1);
     CoutSRAW <= A(0);
 
     -- ROLW
-    ResultROLW <= A(63 downto 32) & A(30 DOWNTO 0) & A(31);
+    ResultROLW <= A(63 DOWNTO 32) & A(30 DOWNTO 0) & A(31);
 
     -- RORW
-    ResultRORW <= A(63 downto 32) & A(0) & A(31 DOWNTO 1);
+    ResultRORW <= A(63 DOWNTO 32) & A(0) & A(31 DOWNTO 1);
     ------------------------------------------------------------------------------------------
 
     ------------------------------------------------------------------------------------------
@@ -228,15 +228,33 @@ BEGIN
 
     -- MULHSU
     ResultMULHSU <= STD_LOGIC_VECTOR(signed(A) * unsigned(B))(127 DOWNTO 64);
-    
+
     -- MULHU
     ResultMULHU <= STD_LOGIC_VECTOR(unsigned(A) * unsigned(B))(127 DOWNTO 64);
 
     -- DIV
     ResultDIV <= STD_LOGIC_VECTOR(signed(A) / signed(B));
-    
+
     -- DIVU
     ResultDIVU <= STD_LOGIC_VECTOR(unsigned(A) / unsigned(B));
+
+    -- DIVW
+    ResultDIVW <= STD_LOGIC_VECTOR(signed((31 DOWNTO 0 => A(31)) & A(31 DOWNTO 0)) / signed((31 DOWNTO 0 => B(31)) & B(31 DOWNTO 0)));
+
+    -- DIVUW
+    ResultDIVUW <= STD_LOGIC_VECTOR(unsigned((31 DOWNTO 0 => A(31)) & A(31 DOWNTO 0)) / unsigned((31 DOWNTO 0 => B(31)) & B(31 DOWNTO 0)));
+
+    -- REM
+    ResultREM <= STD_LOGIC_VECTOR(signed(A) MOD signed(B));
+
+    -- REMU
+    ResultREMU <= STD_LOGIC_VECTOR(unsigned(A) MOD unsigned(B));
+
+    -- REMW
+    ResultREMW <= STD_LOGIC_VECTOR(signed((31 DOWNTO 0 => A(31)) & A(31 DOWNTO 0)) MOD signed((31 DOWNTO 0 => B(31)) & B(31 DOWNTO 0)));
+
+    -- REMUW
+    ResultREMUW <= STD_LOGIC_VECTOR(unsigned((31 DOWNTO 0 => A(31)) & A(31 DOWNTO 0)) MOD unsigned((31 DOWNTO 0 => B(31)) & B(31 DOWNTO 0)));
 
     -- ADD
     TempADD <= unsigned('0' & A) + unsigned('0' & B);
@@ -250,6 +268,19 @@ BEGIN
     ResultSUB <= STD_LOGIC_VECTOR(TempSUB)(63 DOWNTO 0);
     CoutSUB <= TempSUB(64);
     OverflowSUB <= (NOT A(63) AND B(63) AND ResultSUB(63))
+        OR (A(63) AND NOT B(63) AND NOT ResultSUB(63));
+
+    -- ADDW
+    ResultADDW <= STD_LOGIC_VECTOR(unsigned((31 DOWNTO 0 => A(31)) & A(31 DOWNTO 0)) + unsigned((31 DOWNTO 0 => B(31)) & B(31 DOWNTO 0)));
+    CoutADDW <= TempADD(32);
+    OverflowADDW <= (NOT A(63) AND NOT B(63) AND ResultADD(63))
+        OR (A(63) AND B(63) AND NOT ResultADD(63));
+
+    -- SUBW
+    ResultSUBW <= STD_LOGIC_VECTOR(unsigned((31 DOWNTO 0 => A(31)) & A(31 DOWNTO 0))
+        + unsigned(NOT ((31 DOWNTO 0 => B(31)) & B(31 DOWNTO 0))) + to_unsigned(1, 64));
+    CoutSUBW <= ResultSUBW(32);
+    OverflowSUBW <= (NOT A(63) AND B(63) AND ResultSUB(63))
         OR (A(63) AND NOT B(63) AND NOT ResultSUB(63));
     ------------------------------------------------------------------------------------------
 
