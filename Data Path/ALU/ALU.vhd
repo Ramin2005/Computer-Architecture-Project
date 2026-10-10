@@ -130,6 +130,7 @@ ARCHITECTURE struct OF ALU IS
     SIGNAL OverflowSUBW : STD_LOGIC;
 
     -- Temporary signal
+    SIGNAL TempResult : STD_LOGIC_VECTOR(63 DOWNTO 0);
     SIGNAL TempMULSS : STD_LOGIC_VECTOR(127 DOWNTO 0);
     SIGNAL TempMULSU : STD_LOGIC_VECTOR(129 DOWNTO 0);
     SIGNAL TempMULUU : STD_LOGIC_VECTOR(127 DOWNTO 0);
@@ -281,14 +282,14 @@ BEGIN
     -- ADDW
     TempADDW <= unsigned('0' & A(31 DOWNTO 0)) + unsigned('0' & B(31 DOWNTO 0));
     ResultADDW <= (31 DOWNTO 0 => TempADDW(31)) & STD_LOGIC_VECTOR(TempADDW)(31 DOWNTO 0);
-    CoutADDW <= TempADDW(64);
+    CoutADDW <= TempADDW(32);
     OverflowADDW <= (NOT A(31) AND NOT B(31) AND ResultADDW(31))
         OR (A(31) AND B(31) AND NOT ResultADDW(31));
 
     -- SUBW
     TempSUBW <= unsigned('0' & A(31 DOWNTO 0)) + unsigned('0' & (NOT B(31 DOWNTO 0))) + to_unsigned(1, 33);
     ResultSUBW <= (31 DOWNTO 0 => TempSUBW(31)) & STD_LOGIC_VECTOR(TempSUBW)(31 DOWNTO 0);
-    CoutSUBW <= TempSUBW(33);
+    CoutSUBW <= TempSUBW(32);
     OverflowSUBW <= (NOT A(31) AND B(31) AND ResultSUBW(31))
         OR (A(31) AND NOT B(31) AND NOT ResultSUBW(31));
     ------------------------------------------------------------------------------------------
@@ -302,7 +303,7 @@ BEGIN
 
     ------------------------------------------------------------------------------------------
     -- Multiplexing
-    Result <=
+    TempResult <=
         -- Logic operations
         (A AND (63 DOWNTO 0 => Enable(0)))
         OR (ResultNOT AND (63 DOWNTO 0 => Enable(1)))
@@ -366,7 +367,9 @@ BEGIN
         OR (OverflowADDW AND Enable(38))
         OR (OverflowSUBW AND Enable(39));
 
-    Zero <= '1' WHEN Result = (OTHERS => '0') ELSE
+    Result <= TempResult;
+
+    Zero <= '1' WHEN TempResult = (63 DOWNTO 0 => '0') ELSE
         '0';
 
 END struct;
