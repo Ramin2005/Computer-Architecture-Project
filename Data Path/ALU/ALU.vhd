@@ -103,18 +103,31 @@ ARCHITECTURE struct OF ALU IS
 
     -- Arithmetic result signals
     SIGNAL ResultMUL : STD_LOGIC_VECTOR(63 DOWNTO 0);
-    SIGNAL ResultUnMUL : STD_LOGIC_VECTOR(63 DOWNTO 0);
+    SIGNAL ResultMULH : STD_LOGIC_VECTOR(63 DOWNTO 0);
+    SIGNAL ResultMULHSU : STD_LOGIC_VECTOR(63 DOWNTO 0);
+    SIGNAL ResultMULHU : STD_LOGIC_VECTOR(63 DOWNTO 0);
+    SIGNAL ResultMULW : STD_LOGIC_VECTOR(63 DOWNTO 0);
     SIGNAL ResultDIV : STD_LOGIC_VECTOR(63 DOWNTO 0);
-    SIGNAL ResultUnDIV : STD_LOGIC_VECTOR(63 DOWNTO 0);
-    SIGNAL ResultMOD : STD_LOGIC_VECTOR(63 DOWNTO 0);
-    SIGNAL ResultUnMOD : STD_LOGIC_VECTOR(63 DOWNTO 0);
+    SIGNAL ResultDIVU : STD_LOGIC_VECTOR(63 DOWNTO 0);
+    SIGNAL ResultDIVUW : STD_LOGIC_VECTOR(63 DOWNTO 0);
+    SIGNAL ResultREM : STD_LOGIC_VECTOR(63 DOWNTO 0);
+    SIGNAL ResultREMU : STD_LOGIC_VECTOR(63 DOWNTO 0);
+    SIGNAL ResultDIVW : STD_LOGIC_VECTOR(63 DOWNTO 0);
+    SIGNAL ResultREMW : STD_LOGIC_VECTOR(63 DOWNTO 0);
+    SIGNAL ResultREMUW : STD_LOGIC_VECTOR(63 DOWNTO 0);
     SIGNAL ResultADD : STD_LOGIC_VECTOR(63 DOWNTO 0);
     SIGNAL ResultSUB : STD_LOGIC_VECTOR(63 DOWNTO 0);
+    SIGNAL ResultADDW : STD_LOGIC_VECTOR(63 DOWNTO 0);
+    SIGNAL ResultSUBW : STD_LOGIC_VECTOR(63 DOWNTO 0);
 
     SIGNAL CoutADD : STD_LOGIC;
     SIGNAL CoutSUB : STD_LOGIC;
     SIGNAL OverflowADD : STD_LOGIC;
     SIGNAL OverflowSUB : STD_LOGIC;
+    SIGNAL CoutADDW : STD_LOGIC;
+    SIGNAL CoutSUBW : STD_LOGIC;
+    SIGNAL OverflowADDW : STD_LOGIC;
+    SIGNAL OverflowSUBW : STD_LOGIC;
 
     -- Temporary signal
     SIGNAL TempADD : unsigned(64 DOWNTO 0);
@@ -146,35 +159,84 @@ BEGIN
     ------------------------------------------------------------------------------------------
     -- Compare operations
     -- A = B
-    ResultEQ <= (OTHERS => '0') WHEN A = B ELSE (OTHERS => '1');
+    ResultEQ <= (OTHERS => '0') WHEN A = B ELSE
+        (OTHERS => '1');
 
     -- A < B
-    ResultS <= (OTHERS => '0') WHEN signed(A) < signed(B) ELSE (OTHERS => '1');
+    ResultS <= (OTHERS => '0') WHEN signed(A) < signed(B) ELSE
+        (OTHERS => '1');
 
     -- Un A < B
-    ResultUnS <= (OTHERS => '0') WHEN unsigned(A) < unsigned(B) ELSE (OTHERS => '1');
+    ResultUnS <= (OTHERS => '0') WHEN unsigned(A) < unsigned(B) ELSE
+        (OTHERS => '1');
 
     -- A <= B
-    ResultSE <= (OTHERS => '0') WHEN signed(A) <= signed(B) ELSE (OTHERS => '1');
+    ResultSE <= (OTHERS => '0') WHEN signed(A) <= signed(B) ELSE
+        (OTHERS => '1');
 
     -- Un A <= B
-    ResultUnSE <= (OTHERS => '0') WHEN unsigned(A) <= unsigned(B) ELSE (OTHERS => '1');
+    ResultUnSE <= (OTHERS => '0') WHEN unsigned(A) <= unsigned(B) ELSE
+        (OTHERS => '1');
+    ------------------------------------------------------------------------------------------
+
+    ------------------------------------------------------------------------------------------
+    -- Shift and Rotating operations
+    -- SLL
+    ResultSLL <= A(62 DOWNTO 0) & '0';
+    CoutSLL <= A(63);
+
+    -- SRL
+    ResultSRL <= '0' & A(63 DOWNTO 1);
+    CoutSRL <= A(0);
+
+    -- SRA
+    ResultSRA <= A(63) & A(63 DOWNTO 1);
+    CoutSRA <= A(0);
+
+    -- ROL
+    ResultROL <= A(62 DOWNTO 0) & A(63);
+
+    -- ROR
+    ResultROR <= A(0) & A(63 DOWNTO 1);
+
+    -- SLLW
+    ResultSLLW <= A(63 downto 32) & A(30 DOWNTO 0) & '0';
+    CoutSLLW <= A(31);
+
+    -- SRLW
+    ResultSRLW <=  A(63 downto 32) & '0' & A(31 DOWNTO 1);
+    CoutSRLW <= A(0);
+
+    -- SRAW
+    ResultSRAW <=  A(63 downto 32) & A(31) & A(31 DOWNTO 1);
+    CoutSRAW <= A(0);
+
+    -- ROLW
+    ResultROLW <= A(63 downto 32) & A(30 DOWNTO 0) & A(31);
+
+    -- RORW
+    ResultRORW <= A(63 downto 32) & A(0) & A(31 DOWNTO 1);
     ------------------------------------------------------------------------------------------
 
     ------------------------------------------------------------------------------------------
     -- Arithmetic operations
     -- MUL
-    ResultMUL <= STD_LOGIC_VECTOR(signed(A) * signed(B))(63 downto 0);
-    -- UnMUL
-    ResultUnMUL <= STD_LOGIC_VECTOR(unsigned(A) * unsigned(B));
+    ResultMUL <= STD_LOGIC_VECTOR(signed(A) * signed(B))(63 DOWNTO 0);
+
+    -- MULH
+    ResultMULH <= STD_LOGIC_VECTOR(signed(A) * signed(B))(127 DOWNTO 64);
+
+    -- MULHSU
+    ResultMULHSU <= STD_LOGIC_VECTOR(signed(A) * unsigned(B))(127 DOWNTO 64);
+    
+    -- MULHU
+    ResultMULHU <= STD_LOGIC_VECTOR(unsigned(A) * unsigned(B))(127 DOWNTO 64);
 
     -- DIV
     ResultDIV <= STD_LOGIC_VECTOR(signed(A) / signed(B));
-    ResultMOD <= STD_LOGIC_VECTOR(signed(A) MOD signed(B));
-
-    -- UnDIV
-    ResultUnDIV <= STD_LOGIC_VECTOR(unsigned(A) / unsigned(B));
-    ResultUnMOD <= STD_LOGIC_VECTOR(unsigned(A) MOD unsigned(B));
+    
+    -- DIVU
+    ResultDIVU <= STD_LOGIC_VECTOR(unsigned(A) / unsigned(B));
 
     -- ADD
     TempADD <= unsigned('0' & A) + unsigned('0' & B);
@@ -189,47 +251,6 @@ BEGIN
     CoutSUB <= TempSUB(64);
     OverflowSUB <= (NOT A(63) AND B(63) AND ResultSUB(63))
         OR (A(63) AND NOT B(63) AND NOT ResultSUB(63));
-
-    -- INC
-    TempINC <= unsigned('0' & A) + to_unsigned(1, 65);
-    ResultINC <= STD_LOGIC_VECTOR(TempINC)(63 DOWNTO 0);
-    CoutINC <= TempINC(64);
-    OverflowINC <= (NOT A(63) AND ResultINC(63));
-
-    -- DEC
-    USTemp <= (OTHERS => '1');
-    TempDEC <= unsigned('0' & A) + unsigned('0' & USTemp);
-    ResultDEC <= STD_LOGIC_VECTOR(TempDEC)(63 DOWNTO 0);
-    CoutDEC <= TempDEC(64);
-    OverflowDEC <= (A(63) AND NOT ResultDEC(63));
-
-    -- NEG
-    TempNEG <= unsigned('0' & (NOT A)) + to_unsigned(1, 65);
-    ResultNEG <= STD_LOGIC_VECTOR(TempNEG)(63 DOWNTO 0);
-    CoutNEG <= TempNEG(64);
-    OverflowNEG <= '1' WHEN A = (63 => '1', OTHERS => '0') ELSE
-        '0';
-    ------------------------------------------------------------------------------------------
-
-    ------------------------------------------------------------------------------------------
-    -- Shift and Rotating operations
-    -- SHL
-    ResultSHL <= A(62 DOWNTO 0) & '0';
-    CoutSHL <= A(63);
-
-    -- SHR
-    ResultSHR <= '0' & A(63 DOWNTO 1);
-    CoutSHR <= A(0);
-
-    -- ASR
-    ResultASR <= A(63) & A(63 DOWNTO 1);
-    CoutASR <= A(0);
-
-    -- ROL
-    ResultROL <= A(62 DOWNTO 0) & A(63);
-
-    -- ROR
-    ResultROR <= A(0) & A(63 DOWNTO 1);
     ------------------------------------------------------------------------------------------
 
     ------------------------------------------------------------------------------------------
