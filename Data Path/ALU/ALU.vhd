@@ -3,32 +3,32 @@
 
 -- Logic Operations:
 -- Buffer       -> opcode: "000000"
--- NOT          -> opcode: "000001"
+-- NOT          -> opcode: "000001" -- Extended
 -- AND          -> opcode: "000010"
 -- OR           -> opcode: "000011"
 -- XOR          -> opcode: "000100"
--- NAND         -> opcode: "000101"
--- NOR          -> opcode: "000110"
--- XNOR         -> opcode: "000111"
+-- NAND         -> opcode: "000101" -- Extended
+-- NOR          -> opcode: "000110" -- Extended
+-- XNOR         -> opcode: "000111" -- Extended
 
 -- Compare Operations:
--- A == B       -> opcode: "001000"  -- Equal
--- A < B        -> opcode: "001001"  -- SLT
--- Un A < B     -> opcode: "001010"  -- SLTU
--- A <= B       -> opcode: "001011"
--- Un A <= B    -> opcode: "001100"
+-- A == B       -> opcode: "001000" -- Equal
+-- A < B        -> opcode: "001001" -- SLT
+-- Un A < B     -> opcode: "001010" -- SLTU
+-- A <= B       -> opcode: "001011" -- Extended
+-- Un A <= B    -> opcode: "001100" -- Extended
 
 -- Shift and Rotate Operations:
 -- SLL          -> opcode: "010000"
 -- SRL          -> opcode: "010001"
 -- SRA          -> opcode: "010010"
--- ROL          -> opcode: "010011"
--- ROR          -> opcode: "010100"
+-- ROL          -> opcode: "010011" -- Extended
+-- ROR          -> opcode: "010100" -- Extended
 -- SLLW         -> opcode: "010101"
 -- SRLW         -> opcode: "010110"
--- SRAW         -> opcode: "010111"
--- ROLW         -> opcode: "011000"
--- RORW         -> opcode: "011001"
+-- SRAW         -> opcode: "010111" 
+-- ROLW         -> opcode: "011000" -- Extended
+-- RORW         -> opcode: "011001" -- Extended
 
 -- Arithmetic Operations:
 -- MUL          -> opcode: "100000"  -- Low 64 bits of product
@@ -83,37 +83,42 @@ ARCHITECTURE struct OF ALU IS
     SIGNAL ResultLE : STD_LOGIC_VECTOR(63 DOWNTO 0);
     SIGNAL ResultUnLE : STD_LOGIC_VECTOR(63 DOWNTO 0);
 
+    -- Shift and Rotating result signals
+    SIGNAL ResultSLL : STD_LOGIC_VECTOR(63 DOWNTO 0);
+    SIGNAL ResultSRL : STD_LOGIC_VECTOR(63 DOWNTO 0);
+    SIGNAL ResultSRA : STD_LOGIC_VECTOR(63 DOWNTO 0);
+    SIGNAL ResultROL : STD_LOGIC_VECTOR(63 DOWNTO 0);
+    SIGNAL ResultROR : STD_LOGIC_VECTOR(63 DOWNTO 0);
+    SIGNAL ResultSLLW : STD_LOGIC_VECTOR(63 DOWNTO 0);
+    SIGNAL ResultSRLW : STD_LOGIC_VECTOR(63 DOWNTO 0);
+    SIGNAL ResultSRAW : STD_LOGIC_VECTOR(63 DOWNTO 0);
+    SIGNAL ResultROLW : STD_LOGIC_VECTOR(63 DOWNTO 0);
+    SIGNAL ResultRORW : STD_LOGIC_VECTOR(63 DOWNTO 0);
+    SIGNAL CoutSLL : STD_LOGIC;
+    SIGNAL CoutSRL : STD_LOGIC;
+    SIGNAL CoutSRA : STD_LOGIC;
+    SIGNAL CoutSLLW : STD_LOGIC;
+    SIGNAL CoutSRLW : STD_LOGIC;
+    SIGNAL CoutSRAW : STD_LOGIC;
+
     -- Arithmetic result signals
-    SIGNAL ResultMUL : STD_LOGIC_VECTOR(2 * 63 DOWNTO 0);
-    SIGNAL ResultUnMUL : STD_LOGIC_VECTOR(2 * 63 DOWNTO 0);
+    SIGNAL ResultMUL : STD_LOGIC_VECTOR(63 DOWNTO 0);
+    SIGNAL ResultUnMUL : STD_LOGIC_VECTOR(63 DOWNTO 0);
     SIGNAL ResultDIV : STD_LOGIC_VECTOR(63 DOWNTO 0);
     SIGNAL ResultUnDIV : STD_LOGIC_VECTOR(63 DOWNTO 0);
     SIGNAL ResultMOD : STD_LOGIC_VECTOR(63 DOWNTO 0);
     SIGNAL ResultUnMOD : STD_LOGIC_VECTOR(63 DOWNTO 0);
     SIGNAL ResultADD : STD_LOGIC_VECTOR(63 DOWNTO 0);
     SIGNAL ResultSUB : STD_LOGIC_VECTOR(63 DOWNTO 0);
+
     SIGNAL CoutADD : STD_LOGIC;
     SIGNAL CoutSUB : STD_LOGIC;
     SIGNAL OverflowADD : STD_LOGIC;
     SIGNAL OverflowSUB : STD_LOGIC;
 
-    -- Shift and Rotating result signals
-    SIGNAL ResultSHL : STD_LOGIC_VECTOR(63 DOWNTO 0);
-    SIGNAL ResultSHR : STD_LOGIC_VECTOR(63 DOWNTO 0);
-    SIGNAL ResultASR : STD_LOGIC_VECTOR(63 DOWNTO 0);
-    SIGNAL ResultROL : STD_LOGIC_VECTOR(63 DOWNTO 0);
-    SIGNAL ResultROR : STD_LOGIC_VECTOR(63 DOWNTO 0);
-    SIGNAL CoutASR : STD_LOGIC;
-    SIGNAL CoutSHL : STD_LOGIC;
-    SIGNAL CoutSHR : STD_LOGIC;
-
     -- Temporary signal
     SIGNAL TempADD : unsigned(64 DOWNTO 0);
     SIGNAL TempSUB : unsigned(64 DOWNTO 0);
-    SIGNAL TempINC : unsigned(64 DOWNTO 0);
-    SIGNAL TempDEC : unsigned(64 DOWNTO 0);
-    SIGNAL TempNEG : unsigned(64 DOWNTO 0);
-    SIGNAL USTemp : unsigned(63 DOWNTO 0);
 
     -- Enable and Select Signals
     SIGNAL Enable : STD_LOGIC_VECTOR(63 DOWNTO 0);
@@ -141,51 +146,25 @@ BEGIN
     ------------------------------------------------------------------------------------------
     -- Compare operations
     -- A = B
-    ResultEQ <= (0 => '1', OTHERS => '0') WHEN A = B ELSE
-        (OTHERS => '0');
-
-    -- A != B
-    ResultNE <= (OTHERS => '0') WHEN A = B ELSE
-        (0 => '1', OTHERS => '0');
+    ResultEQ <= (OTHERS => '0') WHEN A = B ELSE (OTHERS => '1');
 
     -- A < B
-    ResultS <= (0 => '1', OTHERS => '0') WHEN signed(A) < signed(B) ELSE
-        (OTHERS => '0');
+    ResultS <= (OTHERS => '0') WHEN signed(A) < signed(B) ELSE (OTHERS => '1');
 
     -- Un A < B
-    ResultUnS <= (0 => '1', OTHERS => '0') WHEN unsigned(A) < unsigned(B) ELSE
-        (OTHERS => '0');
-
-    -- A > B
-    ResultG <= (0 => '1', OTHERS => '0') WHEN signed(A) > signed(B) ELSE
-        (OTHERS => '0');
-
-    -- Un A > B
-    ResultUnG <= (0 => '1', OTHERS => '0') WHEN unsigned(A) > unsigned(B) ELSE
-        (OTHERS => '0');
+    ResultUnS <= (OTHERS => '0') WHEN unsigned(A) < unsigned(B) ELSE (OTHERS => '1');
 
     -- A <= B
-    ResultSE <= (0 => '1', OTHERS => '0') WHEN signed(A) <= signed(B) ELSE
-        (OTHERS => '0');
+    ResultSE <= (OTHERS => '0') WHEN signed(A) <= signed(B) ELSE (OTHERS => '1');
 
     -- Un A <= B
-    ResultUnSE <= (0 => '1', OTHERS => '0') WHEN unsigned(A) <= unsigned(B) ELSE
-        (OTHERS => '0');
-
-    -- A >= B
-    ResultGE <= (0 => '1', OTHERS => '0') WHEN signed(A) >= signed(B) ELSE
-        (OTHERS => '0');
-
-    -- Un A >= B
-    ResultUnGE <= (0 => '1', OTHERS => '0') WHEN unsigned(A) >= unsigned(B) ELSE
-        (OTHERS => '0');
+    ResultUnSE <= (OTHERS => '0') WHEN unsigned(A) <= unsigned(B) ELSE (OTHERS => '1');
     ------------------------------------------------------------------------------------------
 
     ------------------------------------------------------------------------------------------
     -- Arithmetic operations
     -- MUL
-    ResultMUL <= STD_LOGIC_VECTOR(signed(A) * signed(B));
-
+    ResultMUL <= STD_LOGIC_VECTOR(signed(A) * signed(B))(63 downto 0);
     -- UnMUL
     ResultUnMUL <= STD_LOGIC_VECTOR(unsigned(A) * unsigned(B));
 
@@ -262,56 +241,5 @@ BEGIN
 
     ------------------------------------------------------------------------------------------
     -- Multiplexing
-    Result <=
-        -- Logic operations
-        (ResultNOT AND (63 DOWNTO 0 => Enable(0)))
-        OR (ResultAND AND (63 DOWNTO 0 => Enable(1)))
-        OR (ResultOR AND (63 DOWNTO 0 => Enable(2)))
-        OR (ResultXOR AND (63 DOWNTO 0 => Enable(3)))
-        OR (ResultNAND AND (63 DOWNTO 0 => Enable(4)))
-        OR (ResultNOR AND (63 DOWNTO 0 => Enable(5)))
-        OR (ResultXNOR AND (63 DOWNTO 0 => Enable(6)))
-        -- Compare operations
-        OR (ResultEQ AND (63 DOWNTO 0 => Enable(7)))
-        OR (ResultNE AND (63 DOWNTO 0 => Enable(8)))
-        OR (ResultS AND (63 DOWNTO 0 => Enable(9)))
-        OR (ResultG AND (63 DOWNTO 0 => Enable(10)))
-        OR (ResultSE AND (63 DOWNTO 0 => Enable(11)))
-        OR (ResultGE AND (63 DOWNTO 0 => Enable(12)))
-        -- Arithmetic operations
-        OR (ResultADD AND (63 DOWNTO 0 => Enable(16)))
-        OR (ResultSUB AND (63 DOWNTO 0 => Enable(17)))
-        OR (ResultINC AND (63 DOWNTO 0 => Enable(18)))
-        OR (ResultDEC AND (63 DOWNTO 0 => Enable(19)))
-        OR (ResultNEG AND (63 DOWNTO 0 => Enable(20)))
-        -- Shift and Rotating operations
-        OR (ResultSHL AND (63 DOWNTO 0 => Enable(21)))
-        OR (ResultSHR AND (63 DOWNTO 0 => Enable(22)))
-        OR (ResultASR AND (63 DOWNTO 0 => Enable(23)))
-        OR (ResultROL AND (63 DOWNTO 0 => Enable(24)))
-        OR (ResultROR AND (63 DOWNTO 0 => Enable(25)))
-        -- Buffer and invalid opcodes
-        OR (A AND (63 DOWNTO 0 => Enable(31)));
-
-    -- Multiplexing Cout
-    Cout <=
-        -- Arithmetic operations
-        (CoutADD AND Enable(16))
-        OR (CoutSUB AND Enable(17))
-        OR (CoutINC AND Enable(18))
-        OR (CoutDEC AND Enable(19))
-        OR (CoutNEG AND Enable(20))
-        -- Shift and Rotating operations
-        OR (CoutSHL AND Enable(21))
-        OR (CoutSHR AND Enable(22))
-        OR (CoutASR AND Enable(23));
-
-    -- Multiplexing Overflow
-    Overflow <=
-        (OverflowADD AND Enable(16))
-        OR (OverflowSUB AND Enable(17))
-        OR (OverflowINC AND Enable(18))
-        OR (OverflowDEC AND Enable(19))
-        OR (OverflowNEG AND Enable(20));
 
 END struct;
