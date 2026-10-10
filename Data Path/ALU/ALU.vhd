@@ -130,8 +130,13 @@ ARCHITECTURE struct OF ALU IS
     SIGNAL OverflowSUBW : STD_LOGIC;
 
     -- Temporary signal
+    SIGNAL TempMULSS : STD_LOGIC_VECTOR(127 DOWNTO 0);
+    SIGNAL TempMULSU : STD_LOGIC_VECTOR(129 DOWNTO 0);
+    SIGNAL TempMULUU : STD_LOGIC_VECTOR(127 DOWNTO 0);
     SIGNAL TempADD : unsigned(64 DOWNTO 0);
     SIGNAL TempSUB : unsigned(64 DOWNTO 0);
+    SIGNAL TempADDW : unsigned(32 DOWNTO 0);
+    SIGNAL TempSUBW : unsigned(32 DOWNTO 0);
 
     -- Enable and Select Signals
     SIGNAL Enable : STD_LOGIC_VECTOR(39 DOWNTO 0);
@@ -163,19 +168,19 @@ BEGIN
         (OTHERS => '1');
 
     -- A < B
-    ResultS <= (OTHERS => '0') WHEN signed(A) < signed(B) ELSE
+    ResultL <= (OTHERS => '0') WHEN signed(A) < signed(B) ELSE
         (OTHERS => '1');
 
     -- Un A < B
-    ResultUnS <= (OTHERS => '0') WHEN unsigned(A) < unsigned(B) ELSE
+    ResultUnL <= (OTHERS => '0') WHEN unsigned(A) < unsigned(B) ELSE
         (OTHERS => '1');
 
     -- A <= B
-    ResultSE <= (OTHERS => '0') WHEN signed(A) <= signed(B) ELSE
+    ResultLE <= (OTHERS => '0') WHEN signed(A) <= signed(B) ELSE
         (OTHERS => '1');
 
     -- Un A <= B
-    ResultUnSE <= (OTHERS => '0') WHEN unsigned(A) <= unsigned(B) ELSE
+    ResultUnLE <= (OTHERS => '0') WHEN unsigned(A) <= unsigned(B) ELSE
         (OTHERS => '1');
     ------------------------------------------------------------------------------------------
 
@@ -220,17 +225,20 @@ BEGIN
 
     ------------------------------------------------------------------------------------------
     -- Arithmetic operations
+    TempMULSS <= STD_LOGIC_VECTOR(signed(A) * signed(B));
+    TempMULSU <= STD_LOGIC_VECTOR(signed(A(63) & A) * signed('0' & B));
+    TempMULUU <= STD_LOGIC_VECTOR(unsigned(A) * unsigned(B));
     -- MUL
-    ResultMUL <= STD_LOGIC_VECTOR(signed(A) * signed(B))(63 DOWNTO 0);
+    ResultMUL <= TempMULSS(63 DOWNTO 0);
 
     -- MULH
-    ResultMULH <= STD_LOGIC_VECTOR(signed(A) * signed(B))(127 DOWNTO 64);
+    ResultMULH <= TempMULSS(127 DOWNTO 64);
 
     -- MULHSU
-    ResultMULHSU <= STD_LOGIC_VECTOR(signed(A) * unsigned(B))(127 DOWNTO 64);
+    ResultMULHSU <= TempMULSU(127 DOWNTO 64);
 
     -- MULHU
-    ResultMULHU <= STD_LOGIC_VECTOR(unsigned(A) * unsigned(B))(127 DOWNTO 64);
+    ResultMULHU <= TempMULUU(127 DOWNTO 64);
 
     -- DIV
     ResultDIV <= STD_LOGIC_VECTOR(signed(A) / signed(B));
@@ -271,17 +279,18 @@ BEGIN
         OR (A(63) AND NOT B(63) AND NOT ResultSUB(63));
 
     -- ADDW
-    ResultADDW <= STD_LOGIC_VECTOR(unsigned((31 DOWNTO 0 => A(31)) & A(31 DOWNTO 0)) + unsigned((31 DOWNTO 0 => B(31)) & B(31 DOWNTO 0)));
-    CoutADDW <= TempADD(32);
-    OverflowADDW <= (NOT A(63) AND NOT B(63) AND ResultADD(63))
-        OR (A(63) AND B(63) AND NOT ResultADD(63));
+    TempADDW <= unsigned('0' & A(31 DOWNTO 0)) + unsigned('0' & B(31 DOWNTO 0));
+    ResultADDW <= (31 DOWNTO 0 => TempADDW(31)) & STD_LOGIC_VECTOR(TempADDW)(31 DOWNTO 0);
+    CoutADDW <= TempADDW(64);
+    OverflowADDW <= (NOT A(31) AND NOT B(31) AND ResultADDW(31))
+        OR (A(31) AND B(31) AND NOT ResultADDW(31));
 
     -- SUBW
-    ResultSUBW <= STD_LOGIC_VECTOR(unsigned((31 DOWNTO 0 => A(31)) & A(31 DOWNTO 0))
-        + unsigned(NOT ((31 DOWNTO 0 => B(31)) & B(31 DOWNTO 0))) + to_unsigned(1, 64));
-    CoutSUBW <= ResultSUBW(32);
-    OverflowSUBW <= (NOT A(63) AND B(63) AND ResultSUB(63))
-        OR (A(63) AND NOT B(63) AND NOT ResultSUB(63));
+    TempSUBW <= unsigned('0' & A(31 DOWNTO 0)) + unsigned('0' & (NOT B(31 DOWNTO 0))) + to_unsigned(1, 33);
+    ResultSUBW <= (31 DOWNTO 0 => TempSUBW(31)) & STD_LOGIC_VECTOR(TempSUBW)(31 DOWNTO 0);
+    CoutSUBW <= TempSUBW(33);
+    OverflowSUBW <= (NOT A(31) AND B(31) AND ResultSUBW(31))
+        OR (A(31) AND NOT B(31) AND NOT ResultSUBW(31));
     ------------------------------------------------------------------------------------------
 
     ------------------------------------------------------------------------------------------
@@ -336,8 +345,8 @@ BEGIN
         OR (ResultREMUW AND (63 DOWNTO 0 => Enable(35)))
         OR (ResultADD AND (63 DOWNTO 0 => Enable(36)))
         OR (ResultSUB AND (63 DOWNTO 0 => Enable(37)))
-        OR (ResultADDW AND (63 DOWNTO 0 => Enable(38)));
-    OR (ResultSUBW AND (63 DOWNTO 0 => Enable(39)));
+        OR (ResultADDW AND (63 DOWNTO 0 => Enable(38)))
+        OR (ResultSUBW AND (63 DOWNTO 0 => Enable(39)));
 
     Cout <=
         (CoutSLL AND Enable(13))
@@ -359,5 +368,5 @@ BEGIN
 
     Zero <= '1' WHEN Result = (OTHERS => '0') ELSE
         '0';
-        
+
 END struct;
