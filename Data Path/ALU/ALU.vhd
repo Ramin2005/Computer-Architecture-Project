@@ -19,35 +19,35 @@
 -- Un A <= B    -> opcode: "001100" -- Extended
 
 -- Shift and Rotate Operations:
--- SLL          -> opcode: "010000"
--- SRL          -> opcode: "010001"
--- SRA          -> opcode: "010010"
--- ROL          -> opcode: "010011" -- Extended
--- ROR          -> opcode: "010100" -- Extended
--- SLLW         -> opcode: "010101"
--- SRLW         -> opcode: "010110"
--- SRAW         -> opcode: "010111" 
--- ROLW         -> opcode: "011000" -- Extended
--- RORW         -> opcode: "011001" -- Extended
+-- SLL          -> opcode: "001101"
+-- SRL          -> opcode: "001110"
+-- SRA          -> opcode: "001111"
+-- ROL          -> opcode: "010000" -- Extended
+-- ROR          -> opcode: "010001" -- Extended
+-- SLLW         -> opcode: "010010"
+-- SRLW         -> opcode: "010011"
+-- SRAW         -> opcode: "010100" 
+-- ROLW         -> opcode: "010101" -- Extended
+-- RORW         -> opcode: "010110" -- Extended
 
 -- Arithmetic Operations:
--- MUL          -> opcode: "100000"  -- Low 64 bits of product
--- MULH         -> opcode: "100001"  -- High 64 bits, signed x signed
--- MULHSU       -> opcode: "100010"  -- High 64 bits, signed x unsigned
--- MULHU        -> opcode: "100011"  -- High 64 bits, unsigned x unsigned
--- MULW         -> opcode: "100100"  -- Low 32-bit product, sign-extended
--- DIV          -> opcode: "100101"  -- Signed 64-bit quotient
--- DIVU         -> opcode: "100110"  -- Unsigned 64-bit quotient
--- DIVW         -> opcode: "100111"  -- Signed 32-bit quotient, sign-extended
--- DIVUW        -> opcode: "101000"  -- Unsigned 32-bit quotient, sign-extended
--- REM          -> opcode: "101001"  -- Signed 64-bit remainder
--- REMU         -> opcode: "101010"  -- Unsigned 64-bit remainder
--- REMW         -> opcode: "101011"  -- Signed 32-bit remainder, sign-extended
--- REMUW        -> opcode: "101100"  -- Unsigned 32-bit remainder, sign-extended
--- ADD          -> opcode: "101101"
--- SUB          -> opcode: "101110"
--- ADDW         -> opcode: "101111"
--- SUBW         -> opcode: "110000"
+-- MUL          -> opcode: "010111"  -- Low 64 bits of product
+-- MULH         -> opcode: "011000"  -- High 64 bits, signed x signed
+-- MULHSU       -> opcode: "011001"  -- High 64 bits, signed x unsigned
+-- MULHU        -> opcode: "011010"  -- High 64 bits, unsigned x unsigned
+-- MULW         -> opcode: "011011"  -- Low 32-bit product, sign-extended
+-- DIV          -> opcode: "011100"  -- Signed 64-bit quotient
+-- DIVU         -> opcode: "011101"  -- Unsigned 64-bit quotient
+-- DIVW         -> opcode: "011110"  -- Signed 32-bit quotient, sign-extended
+-- DIVUW        -> opcode: "011111"  -- Unsigned 32-bit quotient, sign-extended
+-- REM          -> opcode: "100000"  -- Signed 64-bit remainder
+-- REMU         -> opcode: "100001"  -- Unsigned 64-bit remainder
+-- REMW         -> opcode: "100010"  -- Signed 32-bit remainder, sign-extended
+-- REMUW        -> opcode: "100011"  -- Unsigned 32-bit remainder, sign-extended
+-- ADD          -> opcode: "100100"
+-- SUB          -> opcode: "100101"
+-- ADDW         -> opcode: "100110"
+-- SUBW         -> opcode: "100111"
 
 LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
@@ -134,7 +134,7 @@ ARCHITECTURE struct OF ALU IS
     SIGNAL TempSUB : unsigned(64 DOWNTO 0);
 
     -- Enable and Select Signals
-    SIGNAL Enable : STD_LOGIC_VECTOR(63 DOWNTO 0);
+    SIGNAL Enable : STD_LOGIC_VECTOR(39 DOWNTO 0);
 
 BEGIN
 
@@ -286,12 +286,78 @@ BEGIN
 
     ------------------------------------------------------------------------------------------
     -- Enable and Select
-    Enable <= STD_LOGIC_VECTOR(shift_left(to_unsigned(1, 32), to_integer(unsigned(S))))
-        WHEN (unsigned(S) <= 12) OR ((unsigned(S) >= 16) AND (unsigned(S) <= 25)) ELSE
-        x"80000000";
+    Enable <= STD_LOGIC_VECTOR(shift_left(to_unsigned(1, 40), to_integer(unsigned(S))))
+        WHEN (unsigned(S) <= 39) ELSE
+        (0 => '1', OTHERS => '0');
     ------------------------------------------------------------------------------------------
 
     ------------------------------------------------------------------------------------------
     -- Multiplexing
+    Result <=
+        -- Logic operations
+        (A AND (63 DOWNTO 0 => Enable(0)))
+        OR (ResultNOT AND (63 DOWNTO 0 => Enable(1)))
+        OR (ResultAND AND (63 DOWNTO 0 => Enable(2)))
+        OR (ResultOR AND (63 DOWNTO 0 => Enable(3)))
+        OR (ResultXOR AND (63 DOWNTO 0 => Enable(4)))
+        OR (ResultNAND AND (63 DOWNTO 0 => Enable(5)))
+        OR (ResultNOR AND (63 DOWNTO 0 => Enable(6)))
+        OR (ResultXNOR AND (63 DOWNTO 0 => Enable(7)))
+        -- Compare operations
+        OR (ResultEQ AND (63 DOWNTO 0 => Enable(8)))
+        OR (ResultL AND (63 DOWNTO 0 => Enable(9)))
+        OR (ResultUnL AND (63 DOWNTO 0 => Enable(10)))
+        OR (ResultLE AND (63 DOWNTO 0 => Enable(11)))
+        OR (ResultUnLE AND (63 DOWNTO 0 => Enable(12)))
+        -- Shift and Rotating operations
+        OR (ResultSLL AND (63 DOWNTO 0 => Enable(13)))
+        OR (ResultSRL AND (63 DOWNTO 0 => Enable(14)))
+        OR (ResultSRA AND (63 DOWNTO 0 => Enable(15)))
+        OR (ResultROL AND (63 DOWNTO 0 => Enable(16)))
+        OR (ResultROR AND (63 DOWNTO 0 => Enable(17)))
+        OR (ResultSLLW AND (63 DOWNTO 0 => Enable(18)))
+        OR (ResultSRLW AND (63 DOWNTO 0 => Enable(19)))
+        OR (ResultSRAW AND (63 DOWNTO 0 => Enable(20)))
+        OR (ResultROLW AND (63 DOWNTO 0 => Enable(21)))
+        OR (ResultRORW AND (63 DOWNTO 0 => Enable(22)))
+        -- Arithmetic operations
+        OR (ResultMUL AND (63 DOWNTO 0 => Enable(23)))
+        OR (ResultMULH AND (63 DOWNTO 0 => Enable(24)))
+        OR (ResultMULHSU AND (63 DOWNTO 0 => Enable(25)))
+        OR (ResultMULHU AND (63 DOWNTO 0 => Enable(26)))
+        OR (ResultMULW AND (63 DOWNTO 0 => Enable(27)))
+        OR (ResultDIV AND (63 DOWNTO 0 => Enable(28)))
+        OR (ResultDIVU AND (63 DOWNTO 0 => Enable(29)))
+        OR (ResultDIVW AND (63 DOWNTO 0 => Enable(30)))
+        OR (ResultDIVUW AND (63 DOWNTO 0 => Enable(31)))
+        OR (ResultREM AND (63 DOWNTO 0 => Enable(32)))
+        OR (ResultREMU AND (63 DOWNTO 0 => Enable(33)))
+        OR (ResultREMW AND (63 DOWNTO 0 => Enable(34)))
+        OR (ResultREMUW AND (63 DOWNTO 0 => Enable(35)))
+        OR (ResultADD AND (63 DOWNTO 0 => Enable(36)))
+        OR (ResultSUB AND (63 DOWNTO 0 => Enable(37)))
+        OR (ResultADDW AND (63 DOWNTO 0 => Enable(38)));
+    OR (ResultSUBW AND (63 DOWNTO 0 => Enable(39)));
 
+    Cout <=
+        (CoutSLL AND Enable(13))
+        OR (CoutSRL AND Enable(14))
+        OR (CoutSRA AND Enable(15))
+        OR (CoutSLLW AND Enable(18))
+        OR (CoutSRLW AND Enable(19))
+        OR (CoutSRAW AND Enable(20))
+        OR (CoutADD AND Enable(36))
+        OR (CoutSUB AND Enable(37))
+        OR (CoutADDW AND Enable(38))
+        OR (CoutSUBW AND Enable(39));
+
+    Overflow <=
+        (OverflowADD AND Enable(36))
+        OR (OverflowSUB AND Enable(37))
+        OR (OverflowADDW AND Enable(38))
+        OR (OverflowSUBW AND Enable(39));
+
+    Zero <= '1' WHEN Result = (OTHERS => '0') ELSE
+        '0';
+        
 END struct;
