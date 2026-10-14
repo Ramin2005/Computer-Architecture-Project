@@ -4,7 +4,7 @@ USE IEEE.numeric_std.ALL;
 
 ENTITY Control IS
     PORT (
-            Instruction: in std_logic_vector(5 downto 0)
+            Instruction: in std_logic_vector(6 downto 0)
     );
 END ENTITY Control;
 
