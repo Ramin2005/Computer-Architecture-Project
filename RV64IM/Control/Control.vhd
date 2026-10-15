@@ -4,10 +4,17 @@ USE IEEE.numeric_std.ALL;
 
 ENTITY Control IS
     PORT (
-            Instruction: in std_logic_vector(6 downto 0)
+        Instruction : IN STD_LOGIC_VECTOR(6 DOWNTO 0);
+        Branch : OUT STD_LOGIC;
+        MemRead : OUT STD_LOGIC;
+        MemWrite : OUT STD_LOGIC;
+        MemToReg : OUT STD_LOGIC;
+        RegWrite : OUT STD_LOGIC;
+        ALUSrc : OUT STD_LOGIC;
+        ALUOp : OUT STD_LOGIC_VECTOR(5 DOWNTO 0)
     );
 END ENTITY Control;
 
-architecture Struct of Control is 
-begin
-end Struct;
+ARCHITECTURE Struct OF Control IS
+BEGIN
+END Struct;
