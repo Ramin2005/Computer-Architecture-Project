@@ -94,12 +94,6 @@ ARCHITECTURE struct OF ALU IS
     SIGNAL ResultSRAW : STD_LOGIC_VECTOR(63 DOWNTO 0);
     SIGNAL ResultROLW : STD_LOGIC_VECTOR(63 DOWNTO 0);
     SIGNAL ResultRORW : STD_LOGIC_VECTOR(63 DOWNTO 0);
-    SIGNAL CoutSLL : STD_LOGIC;
-    SIGNAL CoutSRL : STD_LOGIC;
-    SIGNAL CoutSRA : STD_LOGIC;
-    SIGNAL CoutSLLW : STD_LOGIC;
-    SIGNAL CoutSRLW : STD_LOGIC;
-    SIGNAL CoutSRAW : STD_LOGIC;
 
     -- Arithmetic result signals
     SIGNAL ResultMUL : STD_LOGIC_VECTOR(63 DOWNTO 0);
@@ -188,40 +182,34 @@ BEGIN
     ------------------------------------------------------------------------------------------
     -- Shift and Rotating operations
     -- SLL
-    ResultSLL <= A(62 DOWNTO 0) & '0';
-    CoutSLL <= A(63);
+    ResultSLL <= STD_LOGIC_VECTOR(SHIFT_LEFT(unsigned(A), to_integer(unsigned(B))));
 
     -- SRL
-    ResultSRL <= '0' & A(63 DOWNTO 1);
-    CoutSRL <= A(0);
+    ResultSRL <= STD_LOGIC_VECTOR(SHIFT_RIGHT(unsigned(A), to_integer(unsigned(B))));
 
     -- SRA
-    ResultSRA <= A(63) & A(63 DOWNTO 1);
-    CoutSRA <= A(0);
+    ResultSRA <= STD_LOGIC_VECTOR(SHIFT_RIGHT(signed(A), to_integer(unsigned(B))));
 
     -- ROL
-    ResultROL <= A(62 DOWNTO 0) & A(63);
+    ResultROL <= STD_LOGIC_VECTOR(ROTATE_LEFT(unsigned(A), to_integer(unsigned(B))));
 
     -- ROR
-    ResultROR <= A(0) & A(63 DOWNTO 1);
+    ResultROR <= STD_LOGIC_VECTOR(ROTATE_RIGHT(unsigned(A), to_integer(unsigned(B))));
 
     -- SLLW
-    ResultSLLW <= A(63 DOWNTO 32) & A(30 DOWNTO 0) & '0';
-    CoutSLLW <= A(31);
+    ResultSLLW <= STD_LOGIC_VECTOR(SHIFT_LEFT(unsigned(A), to_integer(unsigned(B))));
 
     -- SRLW
-    ResultSRLW <= A(63 DOWNTO 32) & '0' & A(31 DOWNTO 1);
-    CoutSRLW <= A(0);
+    ResultSRLW <= A(63 DOWNTO 32) & STD_LOGIC_VECTOR(SHIFT_RIGHT(unsigned(A(31 DOWNTO 0)), to_integer(unsigned(B))));
 
     -- SRAW
-    ResultSRAW <= A(63 DOWNTO 32) & A(31) & A(31 DOWNTO 1);
-    CoutSRAW <= A(0);
+    ResultSRAW <= A(63 DOWNTO 32) & STD_LOGIC_VECTOR(SHIFT_RIGHT(signed(A(31 DOWNTO 0)), to_integer(unsigned(B))));
 
     -- ROLW
-    ResultROLW <= A(63 DOWNTO 32) & A(30 DOWNTO 0) & A(31);
+    ResultROLW <= A(63 DOWNTO 32) & STD_LOGIC_VECTOR(ROTATE_LEFT(unsigned(A(31 downto 0)), to_integer(unsigned(B))));
 
     -- RORW
-    ResultRORW <= A(63 DOWNTO 32) & A(0) & A(31 DOWNTO 1);
+    ResultRORW <= A(63 DOWNTO 32) & STD_LOGIC_VECTOR(ROTATE_RIGHT(unsigned(A(31 downto 0)), to_integer(unsigned(B))));
     ------------------------------------------------------------------------------------------
 
     ------------------------------------------------------------------------------------------
@@ -241,6 +229,9 @@ BEGIN
     -- MULHU
     ResultMULHU <= TempMULUU(127 DOWNTO 64);
 
+    -- MULW
+    ResultMULW <= TempMULSS(63 DOWNTO 0);
+
     -- DIV
     ResultDIV <= STD_LOGIC_VECTOR(signed(A) / signed(B));
 
@@ -251,7 +242,7 @@ BEGIN
     ResultDIVW <= STD_LOGIC_VECTOR(signed((31 DOWNTO 0 => A(31)) & A(31 DOWNTO 0)) / signed((31 DOWNTO 0 => B(31)) & B(31 DOWNTO 0)));
 
     -- DIVUW
-    ResultDIVUW <= STD_LOGIC_VECTOR(unsigned((31 DOWNTO 0 => A(31)) & A(31 DOWNTO 0)) / unsigned((31 DOWNTO 0 => B(31)) & B(31 DOWNTO 0)));
+    ResultDIVUW <= STD_LOGIC_VECTOR(unsigned((31 DOWNTO 0 => '0') & A(31 DOWNTO 0)) / unsigned((31 DOWNTO 0 => B(31)) & B(31 DOWNTO 0)));
 
     -- REM
     ResultREM <= STD_LOGIC_VECTOR(signed(A) MOD signed(B));
@@ -263,7 +254,7 @@ BEGIN
     ResultREMW <= STD_LOGIC_VECTOR(signed((31 DOWNTO 0 => A(31)) & A(31 DOWNTO 0)) MOD signed((31 DOWNTO 0 => B(31)) & B(31 DOWNTO 0)));
 
     -- REMUW
-    ResultREMUW <= STD_LOGIC_VECTOR(unsigned((31 DOWNTO 0 => A(31)) & A(31 DOWNTO 0)) MOD unsigned((31 DOWNTO 0 => B(31)) & B(31 DOWNTO 0)));
+    ResultREMUW <= STD_LOGIC_VECTOR(unsigned((31 DOWNTO 0 => '0') & A(31 DOWNTO 0)) MOD unsigned((31 DOWNTO 0 => B(31)) & B(31 DOWNTO 0)));
 
     -- ADD
     TempADD <= unsigned('0' & A) + unsigned('0' & B);
