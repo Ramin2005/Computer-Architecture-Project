@@ -163,20 +163,20 @@ BEGIN
         (OTHERS => '1');
 
     -- A < B
-    ResultL <= (OTHERS => '0') WHEN signed(A) < signed(B) ELSE
-        (OTHERS => '1');
+    ResultL <= (0 => '1', OTHERS => '0') WHEN signed(A) < signed(B) ELSE
+        (OTHERS => '0');
 
     -- Un A < B
-    ResultUnL <= (OTHERS => '0') WHEN unsigned(A) < unsigned(B) ELSE
-        (OTHERS => '1');
+    ResultUnL <= (0 => '1', OTHERS => '0') WHEN unsigned(A) < unsigned(B) ELSE
+        (OTHERS => '0');
 
     -- A <= B
-    ResultLE <= (OTHERS => '0') WHEN signed(A) <= signed(B) ELSE
-        (OTHERS => '1');
+    ResultLE <= (0 => '1', OTHERS => '0') WHEN signed(A) <= signed(B) ELSE
+        (OTHERS => '0');
 
     -- Un A <= B
-    ResultUnLE <= (OTHERS => '0') WHEN unsigned(A) <= unsigned(B) ELSE
-        (OTHERS => '1');
+    ResultUnLE <= (0 => '1', OTHERS => '0') WHEN unsigned(A) <= unsigned(B) ELSE
+        (OTHERS => '0');
     ------------------------------------------------------------------------------------------
 
     ------------------------------------------------------------------------------------------
@@ -206,10 +206,10 @@ BEGIN
     ResultSRAW <= A(63 DOWNTO 32) & STD_LOGIC_VECTOR(SHIFT_RIGHT(signed(A(31 DOWNTO 0)), to_integer(unsigned(B))));
 
     -- ROLW
-    ResultROLW <= A(63 DOWNTO 32) & STD_LOGIC_VECTOR(ROTATE_LEFT(unsigned(A(31 downto 0)), to_integer(unsigned(B))));
+    ResultROLW <= A(63 DOWNTO 32) & STD_LOGIC_VECTOR(ROTATE_LEFT(unsigned(A(31 DOWNTO 0)), to_integer(unsigned(B))));
 
     -- RORW
-    ResultRORW <= A(63 DOWNTO 32) & STD_LOGIC_VECTOR(ROTATE_RIGHT(unsigned(A(31 downto 0)), to_integer(unsigned(B))));
+    ResultRORW <= A(63 DOWNTO 32) & STD_LOGIC_VECTOR(ROTATE_RIGHT(unsigned(A(31 DOWNTO 0)), to_integer(unsigned(B))));
     ------------------------------------------------------------------------------------------
 
     ------------------------------------------------------------------------------------------
@@ -341,13 +341,7 @@ BEGIN
         OR (ResultSUBW AND (63 DOWNTO 0 => Enable(39)));
 
     Cout <=
-        (CoutSLL AND Enable(13))
-        OR (CoutSRL AND Enable(14))
-        OR (CoutSRA AND Enable(15))
-        OR (CoutSLLW AND Enable(18))
-        OR (CoutSRLW AND Enable(19))
-        OR (CoutSRAW AND Enable(20))
-        OR (CoutADD AND Enable(36))
+        (CoutADD AND Enable(36))
         OR (CoutSUB AND Enable(37))
         OR (CoutADDW AND Enable(38))
         OR (CoutSUBW AND Enable(39));
