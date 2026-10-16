@@ -94,11 +94,6 @@ ARCHITECTURE struct OF ALU IS
     SIGNAL ResultSRAW : STD_LOGIC_VECTOR(63 DOWNTO 0);
     SIGNAL ResultROLW : STD_LOGIC_VECTOR(63 DOWNTO 0);
     SIGNAL ResultRORW : STD_LOGIC_VECTOR(63 DOWNTO 0);
-    SIGNAL TempSLLW : STD_LOGIC_VECTOR(31 DOWNTO 0);
-    SIGNAL TempSRLW : STD_LOGIC_VECTOR(31 DOWNTO 0);
-    SIGNAL TempSRAW : STD_LOGIC_VECTOR(31 DOWNTO 0);
-    SIGNAL TempROLW : STD_LOGIC_VECTOR(31 DOWNTO 0);
-    SIGNAL TempRORW : STD_LOGIC_VECTOR(31 DOWNTO 0);
 
     -- Arithmetic result signals
     SIGNAL ResultMUL : STD_LOGIC_VECTOR(63 DOWNTO 0);
@@ -129,10 +124,17 @@ ARCHITECTURE struct OF ALU IS
     SIGNAL OverflowSUBW : STD_LOGIC;
 
     -- Temporary signal
+    SIGNAL TempSLLW : STD_LOGIC_VECTOR(31 DOWNTO 0);
+    SIGNAL TempSRLW : STD_LOGIC_VECTOR(31 DOWNTO 0);
+    SIGNAL TempSRAW : STD_LOGIC_VECTOR(31 DOWNTO 0);
+    SIGNAL TempROLW : STD_LOGIC_VECTOR(31 DOWNTO 0);
+    SIGNAL TempRORW : STD_LOGIC_VECTOR(31 DOWNTO 0);
     SIGNAL TempResult : STD_LOGIC_VECTOR(63 DOWNTO 0);
     SIGNAL TempMULSS : STD_LOGIC_VECTOR(127 DOWNTO 0);
     SIGNAL TempMULSU : STD_LOGIC_VECTOR(129 DOWNTO 0);
     SIGNAL TempMULUU : STD_LOGIC_VECTOR(127 DOWNTO 0);
+    SIGNAL TempREM : signed (63 DOWNTO 0);
+    SIGNAL TempREMW : signed (31 DOWNTO 0);
     SIGNAL TempADD : unsigned(64 DOWNTO 0);
     SIGNAL TempSUB : unsigned(64 DOWNTO 0);
     SIGNAL TempADDW : unsigned(32 DOWNTO 0);
@@ -142,7 +144,6 @@ ARCHITECTURE struct OF ALU IS
     SIGNAL Enable : STD_LOGIC_VECTOR(39 DOWNTO 0);
 
 BEGIN
-
     ------------------------------------------------------------------------------------------
     -- Logic Operations
     -- NOT
@@ -249,19 +250,21 @@ BEGIN
     ResultDIVU <= STD_LOGIC_VECTOR(unsigned(A) / unsigned(B));
 
     -- DIVW
-    ResultDIVW <= STD_LOGIC_VECTOR(signed((31 DOWNTO 0 => A(31)) & A(31 DOWNTO 0)) / signed((31 DOWNTO 0 => B(31)) & B(31 DOWNTO 0)));
+    ResultDIVW <= STD_LOGIC_VECTOR(signed((63 DOWNTO 32 => A(31)) & A(31 DOWNTO 0)) / signed((63 DOWNTO 32 => B(31)) & B(31 DOWNTO 0)));
 
     -- DIVUW
     ResultDIVUW <= STD_LOGIC_VECTOR(unsigned((31 DOWNTO 0 => '0') & A(31 DOWNTO 0)) / unsigned((31 DOWNTO 0 => '0') & B(31 DOWNTO 0)));
 
     -- REM
-    ResultREM <= STD_LOGIC_VECTOR(signed(A) REM signed(B));
+    TempREM <= signed(A(63 DOWNTO 0)) REM signed(B(63 DOWNTO 0));
+    ResultREM <= STD_LOGIC_VECTOR(TempREM);
 
     -- REMU
     ResultREMU <= STD_LOGIC_VECTOR(unsigned(A) REM unsigned(B));
 
-    -- REMW
-    ResultREMW <= STD_LOGIC_VECTOR(signed((31 DOWNTO 0 => A(31)) & A(31 DOWNTO 0)) REM signed((31 DOWNTO 0 => B(31)) & B(31 DOWNTO 0)));
+    -- REMW-- REMW
+    TempREMW <= signed(A(31 DOWNTO 0)) REM signed(B(31 DOWNTO 0));
+    ResultREMW <= (63 DOWNTO 32 => TempREMW(31)) & STD_LOGIC_VECTOR(TempREMW);
 
     -- REMUW
     ResultREMUW <= STD_LOGIC_VECTOR(unsigned((31 DOWNTO 0 => '0') & A(31 DOWNTO 0)) REM unsigned((31 DOWNTO 0 => '0') & B(31 DOWNTO 0)));
