@@ -8,7 +8,8 @@ ENTITY PCRegister IS
     PORT (
         CLK : IN STD_LOGIC;
         Reset : IN STD_LOGIC;
-        S : IN STD_LOGIC;
+        Load : IN STD_LOGIC;
+        Jump : IN STD_LOGIC;
         Offset : IN STD_LOGIC_VECTOR(63 DOWNTO 0);
         Q : OUT STD_LOGIC_VECTOR(63 DOWNTO 0)
     );
@@ -27,11 +28,14 @@ BEGIN
         IF rising_edge(CLK) AND Reset = '1' THEN
             QR <= (OTHERS => '0');
 
-        ELSIF rising_edge(CLK) AND S = '0' THEN
-            QR <= STD_LOGIC_VECTOR(unsigned(QR) + to_unsigned(4, 64));
+        ELSIF rising_edge(CLK) AND Load = '1' THEN
+            QR <= Offset;
 
-        ELSIF rising_edge(CLK) AND S = '1' THEN
+        ELSIF rising_edge(CLK) AND Jump = '1' THEN
             QR <= STD_LOGIC_VECTOR(unsigned(QR) + unsigned(Offset));
+
+        ELSIF rising_edge(CLK) THEN
+            QR <= STD_LOGIC_VECTOR(unsigned(QR) + to_unsigned(4, 64));
 
         END IF;
 
