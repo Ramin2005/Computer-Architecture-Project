@@ -94,6 +94,11 @@ ARCHITECTURE struct OF ALU IS
     SIGNAL ResultSRAW : STD_LOGIC_VECTOR(63 DOWNTO 0);
     SIGNAL ResultROLW : STD_LOGIC_VECTOR(63 DOWNTO 0);
     SIGNAL ResultRORW : STD_LOGIC_VECTOR(63 DOWNTO 0);
+    SIGNAL TempSLLW : STD_LOGIC_VECTOR(31 DOWNTO 0);
+    SIGNAL TempSRLW : STD_LOGIC_VECTOR(31 DOWNTO 0);
+    SIGNAL TempSRAW : STD_LOGIC_VECTOR(31 DOWNTO 0);
+    SIGNAL TempROLW : STD_LOGIC_VECTOR(31 DOWNTO 0);
+    SIGNAL TempRORW : STD_LOGIC_VECTOR(31 DOWNTO 0);
 
     -- Arithmetic result signals
     SIGNAL ResultMUL : STD_LOGIC_VECTOR(63 DOWNTO 0);
@@ -197,19 +202,24 @@ BEGIN
     ResultROR <= STD_LOGIC_VECTOR(ROTATE_RIGHT(unsigned(A), to_integer(unsigned(B))));
 
     -- SLLW
-    ResultSLLW <= STD_LOGIC_VECTOR(SHIFT_LEFT(unsigned(A), to_integer(unsigned(B))));
+    TempSLLW <= STD_LOGIC_VECTOR(SHIFT_LEFT(unsigned(A(31 DOWNTO 0)), to_integer(unsigned(B))));
+    ResultSLLW <= (63 DOWNTO 32 => TempSLLW(31)) & TempSLLW;
 
     -- SRLW
-    ResultSRLW <= A(63 DOWNTO 32) & STD_LOGIC_VECTOR(SHIFT_RIGHT(unsigned(A(31 DOWNTO 0)), to_integer(unsigned(B))));
+    TempSRLW <= STD_LOGIC_VECTOR(SHIFT_RIGHT(unsigned(A(31 DOWNTO 0)), to_integer(unsigned(B))));
+    ResultSRLW <= (63 DOWNTO 32 => TempSRLW(31)) & TempSRLW;
 
     -- SRAW
-    ResultSRAW <= A(63 DOWNTO 32) & STD_LOGIC_VECTOR(SHIFT_RIGHT(signed(A(31 DOWNTO 0)), to_integer(unsigned(B))));
+    TempSRAW <= STD_LOGIC_VECTOR(SHIFT_RIGHT(signed(A(31 DOWNTO 0)), to_integer(unsigned(B))));
+    ResultSRAW <= (63 DOWNTO 32 => TempSRAW(31)) & TempSRAW;
 
     -- ROLW
-    ResultROLW <= A(63 DOWNTO 32) & STD_LOGIC_VECTOR(ROTATE_LEFT(unsigned(A(31 DOWNTO 0)), to_integer(unsigned(B))));
+    TempROLW <= STD_LOGIC_VECTOR(ROTATE_LEFT(unsigned(A(31 DOWNTO 0)), to_integer(unsigned(B))));
+    ResultROLW <= (63 DOWNTO 32 => TempROLW(31)) & TempROLW;
 
     -- RORW
-    ResultRORW <= A(63 DOWNTO 32) & STD_LOGIC_VECTOR(ROTATE_RIGHT(unsigned(A(31 DOWNTO 0)), to_integer(unsigned(B))));
+    TempRORW <= STD_LOGIC_VECTOR(ROTATE_RIGHT(unsigned(A(31 DOWNTO 0)), to_integer(unsigned(B))));
+    ResultRORW <= (63 DOWNTO 32 => TempRORW(31)) & TempRORW;
     ------------------------------------------------------------------------------------------
 
     ------------------------------------------------------------------------------------------
@@ -242,19 +252,19 @@ BEGIN
     ResultDIVW <= STD_LOGIC_VECTOR(signed((31 DOWNTO 0 => A(31)) & A(31 DOWNTO 0)) / signed((31 DOWNTO 0 => B(31)) & B(31 DOWNTO 0)));
 
     -- DIVUW
-    ResultDIVUW <= STD_LOGIC_VECTOR(unsigned((31 DOWNTO 0 => '0') & A(31 DOWNTO 0)) / unsigned((31 DOWNTO 0 => B(31)) & B(31 DOWNTO 0)));
+    ResultDIVUW <= STD_LOGIC_VECTOR(unsigned((31 DOWNTO 0 => '0') & A(31 DOWNTO 0)) / unsigned((31 DOWNTO 0 => '0') & B(31 DOWNTO 0)));
 
     -- REM
-    ResultREM <= STD_LOGIC_VECTOR(signed(A) MOD signed(B));
+    ResultREM <= STD_LOGIC_VECTOR(signed(A) REM signed(B));
 
     -- REMU
-    ResultREMU <= STD_LOGIC_VECTOR(unsigned(A) MOD unsigned(B));
+    ResultREMU <= STD_LOGIC_VECTOR(unsigned(A) REM unsigned(B));
 
     -- REMW
-    ResultREMW <= STD_LOGIC_VECTOR(signed((31 DOWNTO 0 => A(31)) & A(31 DOWNTO 0)) MOD signed((31 DOWNTO 0 => B(31)) & B(31 DOWNTO 0)));
+    ResultREMW <= STD_LOGIC_VECTOR(signed((31 DOWNTO 0 => A(31)) & A(31 DOWNTO 0)) REM signed((31 DOWNTO 0 => B(31)) & B(31 DOWNTO 0)));
 
     -- REMUW
-    ResultREMUW <= STD_LOGIC_VECTOR(unsigned((31 DOWNTO 0 => '0') & A(31 DOWNTO 0)) MOD unsigned((31 DOWNTO 0 => B(31)) & B(31 DOWNTO 0)));
+    ResultREMUW <= STD_LOGIC_VECTOR(unsigned((31 DOWNTO 0 => '0') & A(31 DOWNTO 0)) REM unsigned((31 DOWNTO 0 => '0') & B(31 DOWNTO 0)));
 
     -- ADD
     TempADD <= unsigned('0' & A) + unsigned('0' & B);
