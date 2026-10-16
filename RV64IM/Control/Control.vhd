@@ -11,7 +11,7 @@ ENTITY Control IS
         MemToReg : OUT STD_LOGIC;
         RegWrite : OUT STD_LOGIC;
         ALUSrc : OUT STD_LOGIC;
-        ALUOp : OUT STD_LOGIC_VECTOR(5 DOWNTO 0)
+        ALUOp : OUT STD_LOGIC_VECTOR(2 DOWNTO 0)
     );
 END ENTITY Control;
 
