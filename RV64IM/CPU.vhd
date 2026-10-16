@@ -6,9 +6,10 @@ ENTITY CPU IS
     PORT (
         CLK : IN STD_LOGIC;
         MemoryReadData : IN STD_LOGIC_VECTOR(63 DOWNTO 0);
+        MemoryReadEnable : OUT STD_LOGIC;
         MemoryWriteData : OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
-        MemoryReadAddress : OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
-        MemoryWriteEnable : OUT STD_LOGIC
+        MemoryWriteEnable : OUT STD_LOGIC;
+        MemoryAddress : OUT STD_LOGIC_VECTOR(63 DOWNTO 0)
     );
 END ENTITY CPU;
 
