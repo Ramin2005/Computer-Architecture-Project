@@ -14,4 +14,14 @@ END ENTITY CPU;
 
 ARCHITECTURE Struct OF CPU IS
 BEGIN
+
+    PROCESS (CLK)
+    BEGIN
+        SIGNAL Instruction : STD_LOGIC_VECTOR(63 DOWNTO 0);
+        SIGNAL RegisterDataOutA : STD_LOGIC_VECTOR(63 DOWNTO 0);
+        SIGNAL RegisterDataOutB : STD_LOGIC_VECTOR(63 DOWNTO 0);
+        SIGNAL ImmData : STD_LOGIC_VECTOR(63 DOWNTO 0);
+        
+    END PROCESS;
+
 END Struct;
