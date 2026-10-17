@@ -289,47 +289,47 @@ BEGIN
 
     -- REM
     TempREM <= TempSA MOD TempSB;
-    ResultREM <= (OTHERS => '1') WHEN B = TempZero ELSE
+    ResultREM <= A WHEN B = TempZero ELSE
         STD_LOGIC_VECTOR(TempREM);
 
     -- REMU
-    ResultREMU <= (OTHERS => '1') WHEN B = TempZero ELSE
+    ResultREMU <= A WHEN B = TempZero ELSE
         STD_LOGIC_VECTOR(TempUA MOD TempUB);
 
     -- REMW
     TempREMW <= TempSAL MOD TempSBL;
-    ResultREMW <= (OTHERS => '1') WHEN B(31 DOWNTO 0) = TempZero(31 DOWNTO 0) ELSE
+    ResultREMW <= ((63 DOWNTO 32 => A(31)) & A(31 DOWNTO 0)) WHEN B(31 DOWNTO 0) = TempZero(31 DOWNTO 0) ELSE
         (63 DOWNTO 32 => TempREMW(31)) & STD_LOGIC_VECTOR(TempREMW);
 
     -- REMUW
     TempREMUW <= TempUAL MOD TempUBL;
-    ResultREMUW <= (OTHERS => '1') WHEN B(31 DOWNTO 0) = TempZero(31 DOWNTO 0) ELSE
+    ResultREMUW <= ((63 DOWNTO 32 => A(31)) & A(31 DOWNTO 0)) WHEN B(31 DOWNTO 0) = TempZero(31 DOWNTO 0) ELSE
         (63 DOWNTO 32 => TempREMUW(31)) & STD_LOGIC_VECTOR(TempREMUW);
 
     -- ADD
     TempADD <= unsigned('0' & A) + unsigned('0' & B);
-    ResultADD <= STD_LOGIC_VECTOR(TempADD)(63 DOWNTO 0);
+    ResultADD <= STD_LOGIC_VECTOR(TempADD(63 DOWNTO 0));
     CoutADD <= TempADD(64);
     OverflowADD <= (NOT A(63) AND NOT B(63) AND ResultADD(63))
         OR (A(63) AND B(63) AND NOT ResultADD(63));
 
     -- SUB
     TempSUB <= unsigned('0' & A) + unsigned('0' & (NOT B)) + to_unsigned(1, 65);
-    ResultSUB <= STD_LOGIC_VECTOR(TempSUB)(63 DOWNTO 0);
+    ResultSUB <= STD_LOGIC_VECTOR(TempSUB(63 DOWNTO 0));
     CoutSUB <= TempSUB(64);
     OverflowSUB <= (NOT A(63) AND B(63) AND ResultSUB(63))
         OR (A(63) AND NOT B(63) AND NOT ResultSUB(63));
 
     -- ADDW
     TempADDW <= unsigned('0' & TempAL) + unsigned('0' & TempBL);
-    ResultADDW <= (31 DOWNTO 0 => TempADDW(31)) & STD_LOGIC_VECTOR(TempADDW)(31 DOWNTO 0);
+    ResultADDW <= (31 DOWNTO 0 => TempADDW(31)) & STD_LOGIC_VECTOR(TempADDW(31 DOWNTO 0));
     CoutADDW <= TempADDW(32);
     OverflowADDW <= (NOT A(31) AND NOT B(31) AND ResultADDW(31))
         OR (A(31) AND B(31) AND NOT ResultADDW(31));
 
     -- SUBW
     TempSUBW <= unsigned('0' & TempAL) + unsigned('0' & (NOT TempBL)) + to_unsigned(1, 33);
-    ResultSUBW <= (31 DOWNTO 0 => TempSUBW(31)) & STD_LOGIC_VECTOR(TempSUBW)(31 DOWNTO 0);
+    ResultSUBW <= (31 DOWNTO 0 => TempSUBW(31)) & STD_LOGIC_VECTOR(TempSUBW(31 DOWNTO 0));
     CoutSUBW <= TempSUBW(32);
     OverflowSUBW <= (NOT A(31) AND B(31) AND ResultSUBW(31))
         OR (A(31) AND NOT B(31) AND NOT ResultSUBW(31));
