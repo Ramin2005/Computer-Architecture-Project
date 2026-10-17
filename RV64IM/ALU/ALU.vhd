@@ -48,6 +48,8 @@
 -- SUB          -> opcode: "100101"
 -- ADDW         -> opcode: "100110"
 -- SUBW         -> opcode: "100111"
+-- ABS          -> opcode: "101000" -- Extended
+-- ABSW         -> opcode: "101001" -- Extended
 
 LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
@@ -113,6 +115,8 @@ ARCHITECTURE struct OF ALU IS
     SIGNAL ResultSUB : STD_LOGIC_VECTOR(63 DOWNTO 0);
     SIGNAL ResultADDW : STD_LOGIC_VECTOR(63 DOWNTO 0);
     SIGNAL ResultSUBW : STD_LOGIC_VECTOR(63 DOWNTO 0);
+    SIGNAL ResultABS : STD_LOGIC_VECTOR(63 DOWNTO 0);
+    SIGNAL ResultABSW : STD_LOGIC_VECTOR(63 DOWNTO 0);
 
     SIGNAL CoutADD : STD_LOGIC;
     SIGNAL CoutSUB : STD_LOGIC;
@@ -137,10 +141,14 @@ ARCHITECTURE struct OF ALU IS
     SIGNAL TempMULUU : STD_LOGIC_VECTOR(127 DOWNTO 0);
     SIGNAL TempSA : signed (63 DOWNTO 0);
     SIGNAL TempSB : signed (63 DOWNTO 0);
+    SIGNAL TempAbsA : signed (63 DOWNTO 0);
+    SIGNAL TempAbsB : signed (63 DOWNTO 0);
     SIGNAL TempUA : unsigned (63 DOWNTO 0);
     SIGNAL TempUB : unsigned (63 DOWNTO 0);
     SIGNAL TempSAL : signed (31 DOWNTO 0);
     SIGNAL TempSBL : signed (31 DOWNTO 0);
+    SIGNAL TempAbsAL : signed (31 DOWNTO 0);
+    SIGNAL TempAbsBL : signed (31 DOWNTO 0);
     SIGNAL TempUAL : unsigned (31 DOWNTO 0);
     SIGNAL TempUBL : unsigned (31 DOWNTO 0);
     SIGNAL TempDIVW : signed (31 DOWNTO 0);
@@ -155,7 +163,7 @@ ARCHITECTURE struct OF ALU IS
     SIGNAL TempResult : STD_LOGIC_VECTOR(63 DOWNTO 0);
 
     -- Enable and Select Signals
-    SIGNAL Enable : STD_LOGIC_VECTOR(39 DOWNTO 0);
+    SIGNAL Enable : STD_LOGIC_VECTOR(43 DOWNTO 0);
 
 BEGIN
 
@@ -169,6 +177,10 @@ BEGIN
     TempSBL <= signed(TempBL);
     TempUAL <= unsigned(TempAL);
     TempUBL <= unsigned(TempBL);
+    TempAbsA <= ABS(TempSA);
+    TempAbsB <= ABS(TempSB);
+    TempAbsAL <= ABS(TempSAL);
+    TempAbsBL <= ABS(TempSBL);
 
     ------------------------------------------------------------------------------------------
     -- Logic Operations
@@ -288,7 +300,7 @@ BEGIN
         (63 DOWNTO 32 => TempDIVUW(31)) & STD_LOGIC_VECTOR(TempDIVUW(31 DOWNTO 0));
 
     -- REM
-    TempREM <= ABS(TempSA) MOD ABS(TempSB);
+    TempREM <= TempAbsA MOD TempAbsB;
     ResultREM <= A WHEN B = TempZero ELSE
         STD_LOGIC_VECTOR(TempREM) WHEN TempSA >= 0 ELSE
         STD_LOGIC_VECTOR(-TempREM);
@@ -298,7 +310,7 @@ BEGIN
         STD_LOGIC_VECTOR(TempUA MOD TempUB);
 
     -- REMW
-    TempREMW <= ABS(TempSAL) MOD ABS(TempSBL);
+    TempREMW <= TempAbsAL MOD TempAbsBL;
     ResultREMW <= ((63 DOWNTO 32 => A(31)) & A(31 DOWNTO 0)) WHEN B(31 DOWNTO 0) = TempZero(31 DOWNTO 0) ELSE
         (63 DOWNTO 32 => TempREMW(31)) & STD_LOGIC_VECTOR(TempREMW) WHEN TempSAL >= 0 ELSE
         (63 DOWNTO 32 => NOT TempREMW(31)) & STD_LOGIC_VECTOR(-TempREMW);
@@ -335,11 +347,17 @@ BEGIN
     CoutSUBW <= TempSUBW(32);
     OverflowSUBW <= (NOT A(31) AND B(31) AND ResultSUBW(31))
         OR (A(31) AND NOT B(31) AND NOT ResultSUBW(31));
+
+    -- ABS
+    ResultABS <= STD_LOGIC_VECTOR(TempAbsA);
+
+    -- ABSW
+    ResultABSW <= (63 DOWNTO 32 => TempAbsAL(31)) & STD_LOGIC_VECTOR(TempAbsAL);
     ------------------------------------------------------------------------------------------
 
     ------------------------------------------------------------------------------------------
     -- Enable and Select
-    Enable <= STD_LOGIC_VECTOR(shift_left(to_unsigned(1, 40), to_integer(unsigned(S))))
+    Enable <= STD_LOGIC_VECTOR(shift_left(to_unsigned(1, 42), to_integer(unsigned(S))))
         WHEN (unsigned(S) <= 39) ELSE
         (0 => '1', OTHERS => '0');
     ------------------------------------------------------------------------------------------
@@ -390,7 +408,9 @@ BEGIN
         OR (ResultADD AND (63 DOWNTO 0 => Enable(36)))
         OR (ResultSUB AND (63 DOWNTO 0 => Enable(37)))
         OR (ResultADDW AND (63 DOWNTO 0 => Enable(38)))
-        OR (ResultSUBW AND (63 DOWNTO 0 => Enable(39)));
+        OR (ResultSUBW AND (63 DOWNTO 0 => Enable(39)))
+        OR (ResultABS AND (63 DOWNTO 0 => Enable(40)))
+        OR (ResultABSW AND (63 DOWNTO 0 => Enable(41)));
 
     Cout <=
         (CoutADD AND Enable(36))
