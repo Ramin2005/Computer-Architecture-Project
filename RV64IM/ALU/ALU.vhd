@@ -124,6 +124,7 @@ ARCHITECTURE struct OF ALU IS
     SIGNAL OverflowSUBW : STD_LOGIC;
 
     -- Temporary signal
+    CONSTANT TempZero : STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0');
     SIGNAL TempAL : STD_LOGIC_VECTOR(31 DOWNTO 0);
     SIGNAL TempBL : STD_LOGIC_VECTOR(31 DOWNTO 0);
     SIGNAL TempSLLW : STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -191,23 +192,23 @@ BEGIN
     -- Compare operations
     -- A = B
     ResultEQ <= (0 => '1', OTHERS => '0') WHEN A = B ELSE
-        (OTHERS => '0');
+        TempZero;
 
     -- A < B
     ResultL <= (0 => '1', OTHERS => '0') WHEN TempSA < TempSB ELSE
-        (OTHERS => '0');
+        TempZero;
 
     -- Un A < B
     ResultUnL <= (0 => '1', OTHERS => '0') WHEN TempUA < TempUB ELSE
-        (OTHERS => '0');
+        TempZero;
 
     -- A <= B
     ResultLE <= (0 => '1', OTHERS => '0') WHEN TempSA <= TempSB ELSE
-        (OTHERS => '0');
+        TempZero;
 
     -- Un A <= B
     ResultUnLE <= (0 => '1', OTHERS => '0') WHEN TempUA <= TempUB ELSE
-        (OTHERS => '0');
+        TempZero;
     ------------------------------------------------------------------------------------------
 
     ------------------------------------------------------------------------------------------
@@ -269,33 +270,41 @@ BEGIN
     ResultMULW <= (63 DOWNTO 32 => TempMULSS(31)) & TempMULSS(31 DOWNTO 0);
 
     -- DIV
-    ResultDIV <= STD_LOGIC_VECTOR(TempSA / TempSB);
+    ResultDIV <= (OTHERS => '1') WHEN B = TempZero ELSE
+        STD_LOGIC_VECTOR(TempSA / TempSB);
 
     -- DIVU
-    ResultDIVU <= STD_LOGIC_VECTOR(TempUA / TempUB);
+    ResultDIVU <= (OTHERS => '1') WHEN B = TempZero ELSE
+        STD_LOGIC_VECTOR(TempUA / TempUB);
 
     -- DIVW
     TempDIVW <= TempSAL / TempSBL;
-    ResultDIVW <= (63 DOWNTO 32 => TempDIVW(31)) & STD_LOGIC_VECTOR(TempDIVW(31 DOWNTO 0));
+    ResultDIVW <= (OTHERS => '1') WHEN B(31 DOWNTO 0) = TempZero(31 DOWNTO 0) ELSE
+        (63 DOWNTO 32 => TempDIVW(31)) & STD_LOGIC_VECTOR(TempDIVW(31 DOWNTO 0));
 
     -- DIVUW
     TempDIVUW <= TempUAL / TempUBL;
-    ResultDIVUW <= (63 DOWNTO 32 => TempDIVUW(31)) & STD_LOGIC_VECTOR(TempDIVUW(31 DOWNTO 0));
+    ResultDIVUW <= (OTHERS => '1') WHEN B(31 DOWNTO 0) = TempZero(31 DOWNTO 0) ELSE
+        (63 DOWNTO 32 => TempDIVUW(31)) & STD_LOGIC_VECTOR(TempDIVUW(31 DOWNTO 0));
 
     -- REM
     TempREM <= TempSA MOD TempSB;
-    ResultREM <= STD_LOGIC_VECTOR(TempREM);
+    ResultREM <= (OTHERS => '1') WHEN B = TempZero ELSE
+        STD_LOGIC_VECTOR(TempREM);
 
     -- REMU
-    ResultREMU <= STD_LOGIC_VECTOR(TempUA MOD TempUB);
+    ResultREMU <= (OTHERS => '1') WHEN B = TempZero ELSE
+        STD_LOGIC_VECTOR(TempUA MOD TempUB);
 
     -- REMW
     TempREMW <= TempSAL MOD TempSBL;
-    ResultREMW <= (63 DOWNTO 32 => TempREMW(31)) & STD_LOGIC_VECTOR(TempREMW);
+    ResultREMW <= (OTHERS => '1') WHEN B(31 DOWNTO 0) = TempZero(31 DOWNTO 0) ELSE
+        (63 DOWNTO 32 => TempREMW(31)) & STD_LOGIC_VECTOR(TempREMW);
 
     -- REMUW
     TempREMUW <= TempUAL MOD TempUBL;
-    ResultREMUW <= (63 DOWNTO 32 => TempREMUW(31)) & STD_LOGIC_VECTOR(TempREMUW);
+    ResultREMUW <= (OTHERS => '1') WHEN B(31 DOWNTO 0) = TempZero(31 DOWNTO 0) ELSE
+        (63 DOWNTO 32 => TempREMUW(31)) & STD_LOGIC_VECTOR(TempREMUW);
 
     -- ADD
     TempADD <= unsigned('0' & A) + unsigned('0' & B);
@@ -395,7 +404,7 @@ BEGIN
 
     Result <= TempResult;
 
-    Zero <= '1' WHEN TempResult = (63 DOWNTO 0 => '0') ELSE
+    Zero <= '1' WHEN TempResult = TempZero ELSE
         '0';
 
 END struct;
