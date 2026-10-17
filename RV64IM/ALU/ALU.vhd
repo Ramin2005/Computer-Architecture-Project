@@ -288,18 +288,20 @@ BEGIN
         (63 DOWNTO 32 => TempDIVUW(31)) & STD_LOGIC_VECTOR(TempDIVUW(31 DOWNTO 0));
 
     -- REM
-    TempREM <= TempSA MOD TempSB;
+    TempREM <= ABS(TempSA) MOD ABS(TempSB);
     ResultREM <= A WHEN B = TempZero ELSE
-        STD_LOGIC_VECTOR(TempREM);
+        STD_LOGIC_VECTOR(TempREM) WHEN TempSA >= 0 ELSE
+        STD_LOGIC_VECTOR(-TempREM);
 
     -- REMU
     ResultREMU <= A WHEN B = TempZero ELSE
         STD_LOGIC_VECTOR(TempUA MOD TempUB);
 
     -- REMW
-    TempREMW <= TempSAL MOD TempSBL;
+    TempREMW <= ABS(TempSAL) MOD ABS(TempSBL);
     ResultREMW <= ((63 DOWNTO 32 => A(31)) & A(31 DOWNTO 0)) WHEN B(31 DOWNTO 0) = TempZero(31 DOWNTO 0) ELSE
-        (63 DOWNTO 32 => TempREMW(31)) & STD_LOGIC_VECTOR(TempREMW);
+        (63 DOWNTO 32 => TempREMW(31)) & STD_LOGIC_VECTOR(TempREMW) WHEN TempSAL >= 0 ELSE
+        (63 DOWNTO 32 => NOT TempREMW(31)) & STD_LOGIC_VECTOR(-TempREMW);
 
     -- REMUW
     TempREMUW <= TempUAL MOD TempUBL;
