@@ -165,8 +165,8 @@ BEGIN
     ------------------------------------------------------------------------------------------
     -- Compare operations
     -- A = B
-    ResultEQ <= (OTHERS => '0') WHEN A = B ELSE
-        (OTHERS => '1');
+    ResultEQ <= (0 => '1', OTHERS => '0') WHEN A = B ELSE
+        (OTHERS => '0');
 
     -- A < B
     ResultL <= (0 => '1', OTHERS => '0') WHEN signed(A) < signed(B) ELSE
@@ -188,38 +188,38 @@ BEGIN
     ------------------------------------------------------------------------------------------
     -- Shift and Rotating operations
     -- SLL
-    ResultSLL <= STD_LOGIC_VECTOR(SHIFT_LEFT(unsigned(A), to_integer(unsigned(B))));
+    ResultSLL <= STD_LOGIC_VECTOR(SHIFT_LEFT(unsigned(A), to_integer(unsigned(B(5 downto 0)))));
 
     -- SRL
-    ResultSRL <= STD_LOGIC_VECTOR(SHIFT_RIGHT(unsigned(A), to_integer(unsigned(B))));
+    ResultSRL <= STD_LOGIC_VECTOR(SHIFT_RIGHT(unsigned(A), to_integer(unsigned(B(5 downto 0)))));
 
     -- SRA
-    ResultSRA <= STD_LOGIC_VECTOR(SHIFT_RIGHT(signed(A), to_integer(unsigned(B))));
+    ResultSRA <= STD_LOGIC_VECTOR(SHIFT_RIGHT(signed(A), to_integer(unsigned(B(5 downto 0)))));
 
     -- ROL
-    ResultROL <= STD_LOGIC_VECTOR(ROTATE_LEFT(unsigned(A), to_integer(unsigned(B))));
+    ResultROL <= STD_LOGIC_VECTOR(ROTATE_LEFT(unsigned(A), to_integer(unsigned(B(5 downto 0)))));
 
     -- ROR
-    ResultROR <= STD_LOGIC_VECTOR(ROTATE_RIGHT(unsigned(A), to_integer(unsigned(B))));
+    ResultROR <= STD_LOGIC_VECTOR(ROTATE_RIGHT(unsigned(A), to_integer(unsigned(B(5 downto 0)))));
 
     -- SLLW
-    TempSLLW <= STD_LOGIC_VECTOR(SHIFT_LEFT(unsigned(A(31 DOWNTO 0)), to_integer(unsigned(B))));
+    TempSLLW <= STD_LOGIC_VECTOR(SHIFT_LEFT(unsigned(A(31 DOWNTO 0)), to_integer(unsigned(B(5 downto 0)))));
     ResultSLLW <= (63 DOWNTO 32 => TempSLLW(31)) & TempSLLW;
 
     -- SRLW
-    TempSRLW <= STD_LOGIC_VECTOR(SHIFT_RIGHT(unsigned(A(31 DOWNTO 0)), to_integer(unsigned(B))));
+    TempSRLW <= STD_LOGIC_VECTOR(SHIFT_RIGHT(unsigned(A(31 DOWNTO 0)), to_integer(unsigned(B(5 downto 0)))));
     ResultSRLW <= (63 DOWNTO 32 => TempSRLW(31)) & TempSRLW;
 
     -- SRAW
-    TempSRAW <= STD_LOGIC_VECTOR(SHIFT_RIGHT(signed(A(31 DOWNTO 0)), to_integer(unsigned(B))));
+    TempSRAW <= STD_LOGIC_VECTOR(SHIFT_RIGHT(signed(A(31 DOWNTO 0)), to_integer(unsigned(B(5 downto 0)))));
     ResultSRAW <= (63 DOWNTO 32 => TempSRAW(31)) & TempSRAW;
 
     -- ROLW
-    TempROLW <= STD_LOGIC_VECTOR(ROTATE_LEFT(unsigned(A(31 DOWNTO 0)), to_integer(unsigned(B))));
+    TempROLW <= STD_LOGIC_VECTOR(ROTATE_LEFT(unsigned(A(31 DOWNTO 0)), to_integer(unsigned(B(5 downto 0)))));
     ResultROLW <= (63 DOWNTO 32 => TempROLW(31)) & TempROLW;
 
     -- RORW
-    TempRORW <= STD_LOGIC_VECTOR(ROTATE_RIGHT(unsigned(A(31 DOWNTO 0)), to_integer(unsigned(B))));
+    TempRORW <= STD_LOGIC_VECTOR(ROTATE_RIGHT(unsigned(A(31 DOWNTO 0)), to_integer(unsigned(B(5 downto 0)))));
     ResultRORW <= (63 DOWNTO 32 => TempRORW(31)) & TempRORW;
     ------------------------------------------------------------------------------------------
 
@@ -241,7 +241,7 @@ BEGIN
     ResultMULHU <= TempMULUU(127 DOWNTO 64);
 
     -- MULW
-    ResultMULW <= TempMULSS(63 DOWNTO 0);
+    ResultMULW <= (63 DOWNTO 32 => TempMULSS(31)) & TempMULSS(31 DOWNTO 0);
 
     -- DIV
     ResultDIV <= STD_LOGIC_VECTOR(signed(A) / signed(B));
