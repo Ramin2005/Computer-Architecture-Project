@@ -276,25 +276,25 @@ BEGIN
 
     -- DIVW
     TempDIVW <= TempSAL / TempSBL;
-    ResultDIVW <= (63 DOWNTO 32 => TempDIVUW(31)) & STD_LOGIC_VECTOR(TempDIVUW(31 DOWNTO 0));
+    ResultDIVW <= (63 DOWNTO 32 => TempDIVW(31)) & STD_LOGIC_VECTOR(TempDIVW(31 DOWNTO 0));
 
     -- DIVUW
     TempDIVUW <= TempUAL / TempUBL;
     ResultDIVUW <= (63 DOWNTO 32 => TempDIVUW(31)) & STD_LOGIC_VECTOR(TempDIVUW(31 DOWNTO 0));
 
     -- REM
-    TempREM <= TempSA REM TempSB;
+    TempREM <= TempSA MOD TempSB;
     ResultREM <= STD_LOGIC_VECTOR(TempREM);
 
     -- REMU
-    ResultREMU <= STD_LOGIC_VECTOR(TempUA REM TempUB);
+    ResultREMU <= STD_LOGIC_VECTOR(TempUA MOD TempUB);
 
     -- REMW
-    TempREMW <= TempSAL REM TempSBL;
+    TempREMW <= TempSAL MOD TempSBL;
     ResultREMW <= (63 DOWNTO 32 => TempREMW(31)) & STD_LOGIC_VECTOR(TempREMW);
 
     -- REMUW
-    TempREMUW <= TempUAL REM TempUBL;
+    TempREMUW <= TempUAL MOD TempUBL;
     ResultREMUW <= (63 DOWNTO 32 => TempREMUW(31)) & STD_LOGIC_VECTOR(TempREMUW);
 
     -- ADD
