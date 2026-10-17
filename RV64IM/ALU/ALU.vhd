@@ -132,7 +132,7 @@ ARCHITECTURE struct OF ALU IS
     SIGNAL TempMULSS : STD_LOGIC_VECTOR(127 DOWNTO 0);
     SIGNAL TempMULSU : STD_LOGIC_VECTOR(129 DOWNTO 0);
     SIGNAL TempMULUU : STD_LOGIC_VECTOR(127 DOWNTO 0);
-    SIGNAL TempDIVW : unsigned (32 DOWNTO 0);
+    SIGNAL TempDIVW : signed (31 DOWNTO 0);
     SIGNAL TempDIVUW : unsigned (31 DOWNTO 0);
     SIGNAL TempREM : signed (63 DOWNTO 0);
     SIGNAL TempREMW : signed (31 DOWNTO 0);
@@ -254,11 +254,10 @@ BEGIN
 
     -- DIVW
     TempDIVW <= signed(A(31 DOWNTO 0)) / signed(B(31 DOWNTO 0));
-    TempDIVW <= signed(A(31 DOWNTO 0)) / signed(B(31 DOWNTO 0));
-    ResultDIVW <= (63 DOWNTO 33 => TempDIVUW(32)) & STD_LOGIC_VECTOR(TempDIVUW(32 DOWNTO 0))
+    ResultDIVW <= (63 DOWNTO 32 => TempDIVUW(31)) & STD_LOGIC_VECTOR(TempDIVUW(31 DOWNTO 0));
 
-        -- DIVUW
-        TempDIVUW <= unsigned(A(31 DOWNTO 0)) / unsigned(B(31 DOWNTO 0));
+    -- DIVUW
+    TempDIVUW <= unsigned(A(31 DOWNTO 0)) / unsigned(B(31 DOWNTO 0));
     ResultDIVUW <= (63 DOWNTO 32 => TempDIVUW(31)) & STD_LOGIC_VECTOR(TempDIVUW(31 DOWNTO 0));
 
     -- REM
