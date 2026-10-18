@@ -61,8 +61,6 @@ ENTITY ALU IS
         B : IN STD_LOGIC_VECTOR(63 DOWNTO 0);
         S : IN STD_LOGIC_VECTOR(5 DOWNTO 0);
         Result : OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
-        Cout : OUT STD_LOGIC;
-        Overflow : OUT STD_LOGIC;
         Zero : OUT STD_LOGIC
     );
 END ENTITY ALU;
@@ -117,15 +115,6 @@ ARCHITECTURE struct OF ALU IS
     SIGNAL ResultSUBW : STD_LOGIC_VECTOR(63 DOWNTO 0);
     SIGNAL ResultABS : STD_LOGIC_VECTOR(63 DOWNTO 0);
     SIGNAL ResultABSW : STD_LOGIC_VECTOR(63 DOWNTO 0);
-
-    SIGNAL CoutADD : STD_LOGIC;
-    SIGNAL CoutSUB : STD_LOGIC;
-    SIGNAL CoutADDW : STD_LOGIC;
-    SIGNAL CoutSUBW : STD_LOGIC;
-    SIGNAL OverflowADD : STD_LOGIC;
-    SIGNAL OverflowSUB : STD_LOGIC;
-    SIGNAL OverflowADDW : STD_LOGIC;
-    SIGNAL OverflowSUBW : STD_LOGIC;
 
     -- Temporary signal
     CONSTANT TempZero : STD_LOGIC_VECTOR(63 DOWNTO 0) := (OTHERS => '0');
@@ -266,7 +255,7 @@ BEGIN
     TempMULSS <= STD_LOGIC_VECTOR(TempSA * TempSB);
     TempMULSU <= STD_LOGIC_VECTOR(signed(A(63) & A) * signed('0' & B));
     TempMULUU <= STD_LOGIC_VECTOR(TempUA * TempUB);
-    
+
     -- MUL
     ResultMUL <= TempMULSS(63 DOWNTO 0);
 
@@ -293,7 +282,7 @@ BEGIN
     -- DIVW
     TempDIVW <= TempSAL / TempSBL WHEN TempSBL /= 0 ELSE
         (OTHERS => '0');
-    ResultDIVW <= (OTHERS => '1') WHEN TempSBL = 0ELSE
+    ResultDIVW <= (OTHERS => '1') WHEN TempSBL = 0 ELSE
         (63 DOWNTO 32 => TempDIVW(31)) & STD_LOGIC_VECTOR(TempDIVW(31 DOWNTO 0));
 
     -- DIVUW
@@ -329,30 +318,18 @@ BEGIN
     -- ADD
     TempADD <= unsigned('0' & A) + unsigned('0' & B);
     ResultADD <= STD_LOGIC_VECTOR(TempADD(63 DOWNTO 0));
-    CoutADD <= TempADD(64);
-    OverflowADD <= (NOT A(63) AND NOT B(63) AND ResultADD(63))
-        OR (A(63) AND B(63) AND NOT ResultADD(63));
 
     -- SUB
     TempSUB <= unsigned('0' & A) + unsigned('0' & (NOT B)) + to_unsigned(1, 65);
     ResultSUB <= STD_LOGIC_VECTOR(TempSUB(63 DOWNTO 0));
-    CoutSUB <= TempSUB(64);
-    OverflowSUB <= (NOT A(63) AND B(63) AND ResultSUB(63))
-        OR (A(63) AND NOT B(63) AND NOT ResultSUB(63));
 
     -- ADDW
     TempADDW <= unsigned('0' & TempAL) + unsigned('0' & TempBL);
     ResultADDW <= (31 DOWNTO 0 => TempADDW(31)) & STD_LOGIC_VECTOR(TempADDW(31 DOWNTO 0));
-    CoutADDW <= TempADDW(32);
-    OverflowADDW <= (NOT A(31) AND NOT B(31) AND ResultADDW(31))
-        OR (A(31) AND B(31) AND NOT ResultADDW(31));
 
     -- SUBW
     TempSUBW <= unsigned('0' & TempAL) + unsigned('0' & (NOT TempBL)) + to_unsigned(1, 33);
     ResultSUBW <= (31 DOWNTO 0 => TempSUBW(31)) & STD_LOGIC_VECTOR(TempSUBW(31 DOWNTO 0));
-    CoutSUBW <= TempSUBW(32);
-    OverflowSUBW <= (NOT A(31) AND B(31) AND ResultSUBW(31))
-        OR (A(31) AND NOT B(31) AND NOT ResultSUBW(31));
 
     -- ABS
     ResultABS <= STD_LOGIC_VECTOR(TempAbsA);
@@ -417,18 +394,6 @@ BEGIN
         OR (ResultSUBW AND (63 DOWNTO 0 => Enable(39)))
         OR (ResultABS AND (63 DOWNTO 0 => Enable(40)))
         OR (ResultABSW AND (63 DOWNTO 0 => Enable(41)));
-
-    Cout <=
-        (CoutADD AND Enable(36))
-        OR (CoutSUB AND Enable(37))
-        OR (CoutADDW AND Enable(38))
-        OR (CoutSUBW AND Enable(39));
-
-    Overflow <=
-        (OverflowADD AND Enable(36))
-        OR (OverflowSUB AND Enable(37))
-        OR (OverflowADDW AND Enable(38))
-        OR (OverflowSUBW AND Enable(39));
 
     Result <= TempResult;
 
