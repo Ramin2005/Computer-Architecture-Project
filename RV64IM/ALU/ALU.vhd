@@ -163,7 +163,7 @@ ARCHITECTURE struct OF ALU IS
     SIGNAL TempResult : STD_LOGIC_VECTOR(63 DOWNTO 0);
 
     -- Enable and Select Signals
-    SIGNAL Enable : STD_LOGIC_VECTOR(43 DOWNTO 0);
+    SIGNAL Enable : STD_LOGIC_VECTOR(41 DOWNTO 0);
 
 BEGIN
 
@@ -358,7 +358,7 @@ BEGIN
     ------------------------------------------------------------------------------------------
     -- Enable and Select
     Enable <= STD_LOGIC_VECTOR(shift_left(to_unsigned(1, 42), to_integer(unsigned(S))))
-        WHEN (unsigned(S) <= 39) ELSE
+        WHEN (unsigned(S) <= 41) ELSE
         (0 => '1', OTHERS => '0');
     ------------------------------------------------------------------------------------------
 
