@@ -4,7 +4,7 @@ USE IEEE.numeric_std.ALL;
 
 ENTITY Control IS
     PORT (
-        Opcode IN STD_LOGIC_VECTOR(6 DOWNTO 0);
+        Opcode : IN STD_LOGIC_VECTOR(6 DOWNTO 0);
         Branch : OUT STD_LOGIC;
         MemRead : OUT STD_LOGIC;
         MemWrite : OUT STD_LOGIC;
@@ -103,6 +103,9 @@ BEGIN
                 ALUSrc <= '1';
                 ALUOp <= "110";
 
+            WHEN OTHERS =>
+                NULL;
+                
         END CASE;
 
     END PROCESS;
