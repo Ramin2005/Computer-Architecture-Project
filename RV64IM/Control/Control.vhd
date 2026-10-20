@@ -101,11 +101,11 @@ BEGIN
             WHEN "0101011" =>
                 RegWrite <= '1';
                 ALUSrc <= '1';
-                ALUOp <= "110";
+                ALUOp <= "111";
 
             WHEN OTHERS =>
                 NULL;
-                
+
         END CASE;
 
     END PROCESS;
