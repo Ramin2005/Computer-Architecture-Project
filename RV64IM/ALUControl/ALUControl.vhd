@@ -14,4 +14,6 @@ END ENTITY ALUControl;
 
 ARCHITECTURE Struct OF ALUControl IS
 BEGIN
+
+    
 END Struct;
