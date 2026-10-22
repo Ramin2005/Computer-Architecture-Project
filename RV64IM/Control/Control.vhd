@@ -43,61 +43,61 @@ BEGIN
                 MemWrite <= '1';
                 ALUSrc <= '1';
 
-                --
+                -- OP IMM
             WHEN "0010011" =>
                 RegWrite <= '1';
                 ALUSrc <= '1';
                 ALUOp <= "011";
 
-                -- 
+                -- OP IMM 32-Bit
             WHEN "0011011" =>
                 RegWrite <= '1';
                 ALUSrc <= '1';
                 ALUOp <= "101";
 
-                -- 
+                -- LUI
             WHEN "0110111" =>
                 RegWrite <= '1';
                 ALUSrc <= '1';
 
-                -- 
+                -- AUIPC
             WHEN "0010111" =>
                 RegWrite <= '1';
                 ALUSrc <= '1';
 
-                -- 
+                -- OP
             WHEN "0110011" =>
                 RegWrite <= '1';
                 ALUOp <= "010";
 
-                -- 
+                -- OP 32-Bit
             WHEN "0111011" =>
                 RegWrite <= '1';
                 ALUOp <= "100";
 
-                -- 
+                -- BRANCH
             WHEN "1100011" =>
                 Branch <= '1';
                 ALUOp <= "001";
 
-                -- 
+                -- JAL
             WHEN "1101111" =>
                 RegSrc <= "10";
                 RegWrite <= '1';
                 ALUSrc <= '1';
 
-                -- 
+                -- JALR
             WHEN "1100111" =>
                 RegSrc <= "10";
                 RegWrite <= '1';
                 ALUSrc <= '1';
 
-                -- 
+                -- Custom 0
             WHEN "0001011" =>
                 RegWrite <= '1';
                 ALUOp <= "110";
 
-                -- 
+                -- Custom 1
             WHEN "0101011" =>
                 RegWrite <= '1';
                 ALUSrc <= '1';
