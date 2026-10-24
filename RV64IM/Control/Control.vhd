@@ -243,4 +243,5 @@ BEGIN
         END CASE;
 
     END PROCESS;
+    
 END Struct;
