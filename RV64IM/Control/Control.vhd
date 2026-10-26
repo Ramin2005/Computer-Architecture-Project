@@ -173,7 +173,7 @@ BEGIN
                 ALUOp <= "000";
 
                 ---------- Custom ----------
-                -- Custom 0
+                -- Custom 0 (R-Type)
             WHEN "0001011" =>
                 Branch <= '0';
                 MemRead <= '0';
@@ -184,7 +184,7 @@ BEGIN
                 ALUSrcB <= '0';
                 ALUOp <= "110";
 
-                -- Custom 1
+                -- Custom 1 (I-Type)
             WHEN "0101011" =>
                 Branch <= '0';
                 MemRead <= '0';
