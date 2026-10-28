@@ -16,7 +16,7 @@ ARCHITECTURE Struct OF ImmGen IS
     SIGNAL RegularImm : signed(11 DOWNTO 0);
     SIGNAL StoreImm : signed(11 DOWNTO 0);
     SIGNAL UTypeImm : signed(31 DOWNTO 0);
-    SIGNAL BTypeImm : signed(11 DOWNTO 0);
+    SIGNAL BTypeImm : signed(12 DOWNTO 0);
     SIGNAL JALImm : signed(20 DOWNTO 0);
 
     -- Immediate Results
@@ -27,28 +27,29 @@ ARCHITECTURE Struct OF ImmGen IS
     SIGNAL ImmediateUType : STD_LOGIC_VECTOR(63 DOWNTO 0);
     SIGNAL ImmediateBType : STD_LOGIC_VECTOR(63 DOWNTO 0);
     SIGNAL ImmediateJAL : STD_LOGIC_VECTOR(63 DOWNTO 0);
-
 BEGIN
-    -- Immediate Inputs
-    ShiftImm <= unsigned(Instruction(25 DOWNTO 20));
-    ShiftWImm <= unsigned(Instruction(24 DOWNTO 20));
-    RegularImm <= signed(Instruction(31 DOWNTO 20));
-    StoreImm <= signed(Instruction(31 DOWNTO 25) & Instruction(11 DOWNTO 7));
-    UTypeImm <= signed(Instruction(31 DOWNTO 12) & x"000");
-    BTypeImm <= signed(Instruction(31) & Instruction(7) & Instruction(30 DOWNTO 25) & Instruction(11 DOWNTO 8) & '0');
-    JALImm <= signed(Instruction(31) & Instruction(19 DOWNTO 12) & Instruction(20) & Instruction(30 DOWNTO 21) & '0');
-
-    -- Immediate Results
-    ImmediateShift <= STD_LOGIC_VECTOR(RESIZE(ShiftImm, 64));
-    ImmediateShiftW <= STD_LOGIC_VECTOR(RESIZE(ShiftWImm, 64));
-    ImmediateRegular <= STD_LOGIC_VECTOR(RESIZE(RegularImm, 64));
-    ImmediateStores <= STD_LOGIC_VECTOR(RESIZE(StoreImm, 64));
-    ImmediateUType <= STD_LOGIC_VECTOR(RESIZE(UTypeImm, 64));
-    ImmediateBType <= STD_LOGIC_VECTOR(RESIZE(BTypeImm, 64));
-    ImmediateJAL <= STD_LOGIC_VECTOR(RESIZE(JALImm, 64));
 
     PROCESS (Instruction)
     BEGIN
+        Immediate <= (OTHERS => '0');
+
+        -- Immediate Inputs
+        ShiftImm <= unsigned(Instruction(25 DOWNTO 20));
+        ShiftWImm <= unsigned(Instruction(24 DOWNTO 20));
+        RegularImm <= signed(Instruction(31 DOWNTO 20));
+        StoreImm <= signed(Instruction(31 DOWNTO 25) & Instruction(11 DOWNTO 7));
+        UTypeImm <= signed(Instruction(31 DOWNTO 12) & x"000");
+        BTypeImm <= signed(Instruction(31) & Instruction(7) & Instruction(30 DOWNTO 25) & Instruction(11 DOWNTO 8) & '0');
+        JALImm <= signed(Instruction(31) & Instruction(19 DOWNTO 12) & Instruction(20) & Instruction(30 DOWNTO 21) & '0');
+
+        -- Immediate Results
+        ImmediateShift <= STD_LOGIC_VECTOR(RESIZE(ShiftImm, 64));
+        ImmediateShiftW <= STD_LOGIC_VECTOR(RESIZE(ShiftWImm, 64));
+        ImmediateRegular <= STD_LOGIC_VECTOR(RESIZE(RegularImm, 64));
+        ImmediateStores <= STD_LOGIC_VECTOR(RESIZE(StoreImm, 64));
+        ImmediateUType <= STD_LOGIC_VECTOR(RESIZE(UTypeImm, 64));
+        ImmediateBType <= STD_LOGIC_VECTOR(RESIZE(BTypeImm, 64));
+        ImmediateJAL <= STD_LOGIC_VECTOR(RESIZE(JALImm, 64));
 
         CASE Instruction(6 DOWNTO 0) IS
                 -- I-Type Loads, JALR
@@ -64,14 +65,14 @@ BEGIN
                 CASE Instruction(14 DOWNTO 12) IS
                         -- Regular I-Type: 12-bit Sign Extension
                     WHEN "000" | "010" | "011" | "100" | "110" | "111" =>
-                        Immediate <= ImmediateArithmeticRegular;
+                        Immediate <= ImmediateRegular;
 
                         -- Shift Immediate: 6-bit Zero Extension
                     WHEN "001" | "101" =>
                         Immediate <= ImmediateShift;
 
                     WHEN OTHERS =>
-                        Immediate <= (OTHERS => '0');
+                        NULL;
                 END CASE;
 
                 -- I-Type Word Instructions
@@ -79,14 +80,14 @@ BEGIN
                 CASE Instruction(14 DOWNTO 12) IS
                         -- ADDIW
                     WHEN "000" =>
-                        Immediate <= ImmediateArithmeticRegular;
+                        Immediate <= ImmediateRegular;
 
                         -- SLLIW, SRLIW, SRAIW
                     WHEN "001" | "101" =>
                         Immediate <= ImmediateShiftW;
 
                     WHEN OTHERS =>
-                        Immediate <= (OTHERS => '0');
+                        NULL;
                 END CASE;
 
                 -- U-Type: LUI,  AUIPC
@@ -116,12 +117,12 @@ BEGIN
                         END IF;
 
                     WHEN OTHERS =>
-                        Immediate <= (OTHERS => '0');
+                        NULL;
                 END CASE;
 
                 -- Instructions Without Immediate
             WHEN OTHERS =>
-                Immediate <= (OTHERS => '0');
+                NULL;
 
         END CASE;
 
