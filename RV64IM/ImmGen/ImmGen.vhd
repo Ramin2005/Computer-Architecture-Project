@@ -28,28 +28,28 @@ ARCHITECTURE Struct OF ImmGen IS
     SIGNAL ImmediateBType : STD_LOGIC_VECTOR(63 DOWNTO 0);
     SIGNAL ImmediateJAL : STD_LOGIC_VECTOR(63 DOWNTO 0);
 BEGIN
+    -- Immediate Inputs
+    ShiftImm <= unsigned(Instruction(25 DOWNTO 20));
+    ShiftWImm <= unsigned(Instruction(24 DOWNTO 20));
+    RegularImm <= signed(Instruction(31 DOWNTO 20));
+    StoreImm <= signed(Instruction(31 DOWNTO 25) & Instruction(11 DOWNTO 7));
+    UTypeImm <= signed(Instruction(31 DOWNTO 12) & x"000");
+    BTypeImm <= signed(Instruction(31) & Instruction(7) & Instruction(30 DOWNTO 25) & Instruction(11 DOWNTO 8) & '0');
+    JALImm <= signed(Instruction(31) & Instruction(19 DOWNTO 12) & Instruction(20) & Instruction(30 DOWNTO 21) & '0');
 
-    PROCESS (Instruction)
+    -- Immediate Results
+    ImmediateShift <= STD_LOGIC_VECTOR(RESIZE(ShiftImm, 64));
+    ImmediateShiftW <= STD_LOGIC_VECTOR(RESIZE(ShiftWImm, 64));
+    ImmediateRegular <= STD_LOGIC_VECTOR(RESIZE(RegularImm, 64));
+    ImmediateStores <= STD_LOGIC_VECTOR(RESIZE(StoreImm, 64));
+    ImmediateUType <= STD_LOGIC_VECTOR(RESIZE(UTypeImm, 64));
+    ImmediateBType <= STD_LOGIC_VECTOR(RESIZE(BTypeImm, 64));
+    ImmediateJAL <= STD_LOGIC_VECTOR(RESIZE(JALImm, 64));
+
+    PROCESS (Instruction, ImmediateShift, ImmediateShiftW, ImmediateRegular,
+        ImmediateStores, ImmediateUType, ImmediateBType, ImmediateJAL)
     BEGIN
         Immediate <= (OTHERS => '0');
-
-        -- Immediate Inputs
-        ShiftImm <= unsigned(Instruction(25 DOWNTO 20));
-        ShiftWImm <= unsigned(Instruction(24 DOWNTO 20));
-        RegularImm <= signed(Instruction(31 DOWNTO 20));
-        StoreImm <= signed(Instruction(31 DOWNTO 25) & Instruction(11 DOWNTO 7));
-        UTypeImm <= signed(Instruction(31 DOWNTO 12) & x"000");
-        BTypeImm <= signed(Instruction(31) & Instruction(7) & Instruction(30 DOWNTO 25) & Instruction(11 DOWNTO 8) & '0');
-        JALImm <= signed(Instruction(31) & Instruction(19 DOWNTO 12) & Instruction(20) & Instruction(30 DOWNTO 21) & '0');
-
-        -- Immediate Results
-        ImmediateShift <= STD_LOGIC_VECTOR(RESIZE(ShiftImm, 64));
-        ImmediateShiftW <= STD_LOGIC_VECTOR(RESIZE(ShiftWImm, 64));
-        ImmediateRegular <= STD_LOGIC_VECTOR(RESIZE(RegularImm, 64));
-        ImmediateStores <= STD_LOGIC_VECTOR(RESIZE(StoreImm, 64));
-        ImmediateUType <= STD_LOGIC_VECTOR(RESIZE(UTypeImm, 64));
-        ImmediateBType <= STD_LOGIC_VECTOR(RESIZE(BTypeImm, 64));
-        ImmediateJAL <= STD_LOGIC_VECTOR(RESIZE(JALImm, 64));
 
         CASE Instruction(6 DOWNTO 0) IS
                 -- I-Type Loads, JALR
