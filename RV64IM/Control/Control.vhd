@@ -11,8 +11,8 @@ ENTITY Control IS
         RegSrc : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
         RegWrite : OUT STD_LOGIC;
         ALUSrcA : OUT STD_LOGIC;
-        ALUSrcB : OUT STD_LOGIC;
-        ALUOp : OUT STD_LOGIC_VECTOR(2 DOWNTO 0)
+        ALUSrcB : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
+        ALUOpcode : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);
     );
 END ENTITY Control;
 
@@ -32,7 +32,7 @@ BEGIN
                 RegSrc <= "00";
                 RegWrite <= '1';
                 ALUSrcA <= '0';
-                ALUSrcB <= '0';
+                ALUSrcB <= '00';
                 ALUOp <= "010";
 
                 -- OP 32-Bit
@@ -43,9 +43,9 @@ BEGIN
                 RegSrc <= "00";
                 RegWrite <= '1';
                 ALUSrcA <= '0';
-                ALUSrcB <= '0';
+                ALUSrcB <= '00';
                 ALUOp <= "100";
-                
+
                 ---------- ALU Immediate ----------
                 -- OP IMM
             WHEN "0010011" =>
@@ -55,7 +55,7 @@ BEGIN
                 RegSrc <= "00";
                 RegWrite <= '1';
                 ALUSrcA <= '0';
-                ALUSrcB <= '1';
+                ALUSrcB <= '01';
                 ALUOp <= "011";
 
                 -- OP IMM 32-Bit
@@ -66,7 +66,7 @@ BEGIN
                 RegSrc <= "00";
                 RegWrite <= '1';
                 ALUSrcA <= '0';
-                ALUSrcB <= '1';
+                ALUSrcB <= '01';
                 ALUOp <= "101";
 
                 ---------- Upper Immediate ----------
@@ -78,7 +78,7 @@ BEGIN
                 RegSrc <= "00";
                 RegWrite <= '1';
                 ALUSrcA <= '1';
-                ALUSrcB <= '1';
+                ALUSrcB <= '01';
                 ALUOp <= "000";
 
                 -- LUI
@@ -89,7 +89,7 @@ BEGIN
                 RegSrc <= "11";
                 RegWrite <= '1';
                 ALUSrcA <= '0';
-                ALUSrcB <= '0';
+                ALUSrcB <= '00';
                 ALUOp <= "000";
 
                 ---------- Memory ----------
@@ -101,7 +101,7 @@ BEGIN
                 RegSrc <= "01";
                 RegWrite <= '1';
                 ALUSrcA <= '0';
-                ALUSrcB <= '1';
+                ALUSrcB <= '01';
                 ALUOp <= "000";
 
                 -- Store
@@ -112,7 +112,7 @@ BEGIN
                 RegSrc <= "00";
                 RegWrite <= '0';
                 ALUSrcA <= '0';
-                ALUSrcB <= '1';
+                ALUSrcB <= '01';
                 ALUOp <= "000";
 
                 ---------- Control Transfer ----------
@@ -124,7 +124,7 @@ BEGIN
                 RegSrc <= "00";
                 RegWrite <= '0';
                 ALUSrcA <= '0';
-                ALUSrcB <= '0';
+                ALUSrcB <= '00';
                 ALUOp <= "001";
 
                 -- JALR
@@ -135,7 +135,7 @@ BEGIN
                 RegSrc <= "10";
                 RegWrite <= '1';
                 ALUSrcA <= '0';
-                ALUSrcB <= '1';
+                ALUSrcB <= '01';
                 ALUOp <= "000";
 
                 -- JAL
@@ -146,7 +146,7 @@ BEGIN
                 RegSrc <= "10";
                 RegWrite <= '1';
                 ALUSrcA <= '1';
-                ALUSrcB <= '1';
+                ALUSrcB <= '01';
                 ALUOp <= "000";
 
                 ---------- Custom ----------
@@ -158,7 +158,7 @@ BEGIN
                 RegSrc <= "00";
                 RegWrite <= '1';
                 ALUSrcA <= '0';
-                ALUSrcB <= '0';
+                ALUSrcB <= '00';
                 ALUOp <= "110";
 
                 -- Custom 1 (I-Type)
@@ -169,7 +169,7 @@ BEGIN
                 RegSrc <= "00";
                 RegWrite <= '1';
                 ALUSrcA <= '0';
-                ALUSrcB <= '1';
+                ALUSrcB <= '01';
                 ALUOp <= "111";
 
                 -- Other (compressed / longer instructions)
@@ -180,11 +180,11 @@ BEGIN
                 RegSrc <= "00";
                 RegWrite <= '0';
                 ALUSrcA <= '0';
-                ALUSrcB <= '0';
+                ALUSrcB <= '00';
                 ALUOp <= "000";
 
         END CASE;
 
     END PROCESS;
-    
+
 END Struct;
