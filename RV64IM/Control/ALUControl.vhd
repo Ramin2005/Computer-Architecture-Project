@@ -6,7 +6,7 @@ ENTITY ALUControl IS
     PORT (
         funct3 : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
         funct7 : IN STD_LOGIC_VECTOR(6 DOWNTO 0);
-        ALUOp : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
+        ALUOpcode : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
         ALUSelect : OUT STD_LOGIC_VECTOR(5 DOWNTO 0)
     );
 END ENTITY ALUControl;
@@ -16,20 +16,20 @@ ARCHITECTURE Struct OF ALUControl IS
 BEGIN
     funct6 <= funct7(6 DOWNTO 1);
 
-    PROCESS (funct3, funct6, funct7, ALUOp)
+    PROCESS (funct3, funct6, funct7, ALUOpcode)
     BEGIN
 
         ALUSelect <= "000000";
 
-        CASE ALUOp IS
+        CASE ALUOpcode IS
                 --------------
-                -- ALUOp "000"
+                -- ALUOpcode "000"
             WHEN "000" =>
                 -- ADD
                 ALUSelect <= "000000";
 
                 --------------
-                -- ALUOp "001"
+                -- ALUOpcode "001"
             WHEN "001" =>
                 CASE funct3 IS
                     WHEN "000" =>
@@ -53,7 +53,7 @@ BEGIN
                 END CASE;
 
                 --------------
-                -- ALUOp "010"
+                -- ALUOpcode "010"
             WHEN "010" =>
                 CASE funct3 IS
                     WHEN "000" =>
@@ -146,7 +146,7 @@ BEGIN
                 END CASE;
 
                 --------------
-                -- ALUOp "011"
+                -- ALUOpcode "011"
             WHEN "011" =>
                 CASE funct3 IS
                     WHEN "000" =>
@@ -215,7 +215,7 @@ BEGIN
                 END CASE;
 
                 --------------
-                -- ALUOp "100"
+                -- ALUOpcode "100"
             WHEN "100" =>
                 CASE funct3 IS
                     WHEN "000" =>
@@ -279,7 +279,7 @@ BEGIN
                 END CASE;
 
                 --------------
-                -- ALUOp "101"
+                -- ALUOpcode "101"
             WHEN "101" =>
                 CASE funct3 IS
                     WHEN "000" =>
@@ -311,7 +311,7 @@ BEGIN
                 END CASE;
 
                 --------------
-                -- ALUOp "110"
+                -- ALUOpcode "110"
             WHEN "110" =>
                 CASE funct3 IS
                     WHEN "000" =>
@@ -472,7 +472,7 @@ BEGIN
                 END CASE;
 
                 --------------
-                -- ALUOp "111"
+                -- ALUOpcode "111"
             WHEN "111" =>
                 CASE funct3 IS
                     WHEN "000" =>
