@@ -12,7 +12,7 @@ ENTITY Control IS
         PCSrc : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
         ALUSrcA : OUT STD_LOGIC;
         ALUSrcB : OUT STD_LOGIC;
-        ALUOpcode : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);
+        ALUOpcode : OUT STD_LOGIC_VECTOR(2 DOWNTO 0)
     );
 END ENTITY Control;
 
