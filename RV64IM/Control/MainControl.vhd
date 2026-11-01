@@ -11,7 +11,7 @@ ENTITY MainControl IS
         RegSrc : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
         PCSrc : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
         ALUSrcA : OUT STD_LOGIC;
-        ALUSrcB : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
+        ALUSrcB : OUT STD_LOGIC;
         ALUSelect : OUT STD_LOGIC_VECTOR(5 DOWNTO 0)
     );
 END ENTITY MainControl;
