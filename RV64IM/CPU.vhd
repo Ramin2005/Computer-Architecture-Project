@@ -5,7 +5,7 @@ USE IEEE.numeric_std.ALL;
 ENTITY CPU IS
     PORT (
         -- Reset & Clock Signal
-        CLK : IN STD_LOGIC;
+        Clk : IN STD_LOGIC;
         Reset : IN STD_LOGIC;
 
         -- Data Memory
@@ -23,6 +23,15 @@ ENTITY CPU IS
 END ENTITY CPU;
 
 ARCHITECTURE Struct OF CPU IS
+    -- Constant 4
+    CONSTANT Four : STD_LOGIC_VECTOR(63 DOWNTO 0) := (2 => '1' | OTHERS => '0');
+
+    -- Instruction Signal
+    SIGNAL SigInstruction : STD_LOGIC_VECTOR(63 DOWNTO 0);
+
+    -- PC
+    SIGNAL SigPC : STD_LOGIC_VECTOR(63 DOWNTO 0);
+    SIGNAL SigPCPlus4 : STD_LOGIC_VECTOR(63 DOWNTO 0);
 
     -- Control Unit Signals
     SIGNAL SigBranch : STD_LOGIC;
@@ -31,16 +40,32 @@ ARCHITECTURE Struct OF CPU IS
     SIGNAL SigRegWrite : STD_LOGIC;
     SIGNAL SigRegSrc : STD_LOGIC_VECTOR(1 DOWNTO 0);
     SIGNAL SigPCSrc : STD_LOGIC_VECTOR(1 DOWNTO 0);
-    SIGNAL SigALUSrcA : STD_LOGIC;
-    SIGNAL SigALUSrcB : STD_LOGIC;
+    SIGNAL SigALUSrcA, SigALUSrcB : STD_LOGIC;
     SIGNAL SigALUSelect : STD_LOGIC_VECTOR(5 DOWNTO 0);
 
+    -- Register File
+    SIGNAL SigRegDataIn : STD_LOGIC_VECTOR(63 DOWNTO 0);
+    SIGNAL SigRegDataOutA, SigRegDataOutB : STD_LOGIC_VECTOR(63 DOWNTO 0);
+
+    -- Imm Gen
+    SIGNAL SigImmediate : STD_LOGIC_VECTOR(63 DOWNTO 0);
+
+    -- ALU
+    SIGNAL SigA, SigB : STD_LOGIC_VECTOR(63 DOWNTO 0);
+    SIGNAL SigResult : STD_LOGIC_VECTOR(63 DOWNTO 0);
+    SIGNAL SigZeroFlag : STD_LOGIC;
+
+    -- PC Control
+    SIGNAL SigBranchAdd : STD_LOGIC_VECTOR(63 DOWNTO 0);
+    SIGNAL SigNextPC : STD_LOGIC_VECTOR(63 DOWNTO 0);
 BEGIN
+    -- Instruction 
+    SigInstruction <= InstructionIn;
 
     -- Control Unit
     ControlUnit : ENTITY work.MainControl
         PORT MAP(
-            Instruction => InstructionIn,
+            Instruction => SigInstruction,
             Branch => SigBranch,
             MemRead => SigMemRead,
             MemWrite => SigMemWrite,
@@ -51,5 +76,109 @@ BEGIN
             ALUSrcB => SigALUSrcB,
             ALUSelect => SigALUSelect
         );
+
+    -- Register File
+    RegisterFile : ENTITY work.FileRegister32R64BWithClear
+        PORT MAP(
+            Clk => Clk,
+            Clear => Reset,
+            AddressA => SigInstruction(19 DOWNTO 15),
+            AddressB => SigInstruction(24 DOWNTO 20),
+            AddressW => SigInstruction(11 DOWNTO 7),
+            WriteEnable => SigRegWrite,
+            DataIn => SigRegDataIn;
+            DataOutA => SigRegDataOutA,
+            DataOutB => SigRegDataOutB
+        );
+
+    -- Imm Gen
+    ImmGen : ENTITY work.ImmGen
+        PORT MAP(
+            Instruction => SigInstruction,
+            Immediate => SigImmediate
+        );
+
+    -- Mux 1 (ALUSrc1)
+    Mux1 : ENTITY work.MUX64B2To1
+        PORT MAP(
+            A => SigRegDataOutAو
+            B => SigPC,
+            S => SigALUSrcA,
+            O => SigA
+        );
+
+    -- Mux 2 (ALUSrc2)
+    Mux2 : ENTITY work.MUX64B2To1
+        PORT MAP(
+            A => SigRegDataOutBو
+            B => SigImmediate,
+            S => SigALUSrcB,
+            O => SigB
+        );
+
+    -- ALU
+    ALU : ENTITY work.ALU
+        PORT MAP(
+            A => SigA,
+            B => SigB,
+            S => SigALUSelect,
+            Result => SigResult,
+            Zero => SigZeroFlag
+        );
+
+    -- Memory Signals
+    MemoryAddress <= SigResult;
+    MemoryWriteData <= SigRegDataOutB;
+    MemoryMask <= SigInstruction(14 DOWNTO 12);
+    MemoryWriteEnable <= SigMemWrite;
+    MemoryReadEnable <= SigMemRead;
+
+    -- Mux 3 (Register File Src)
+    Mux3 : ENTITY work.MUX64B2To1
+        PORT MAP(
+            A => SigRegDataOutB,
+            B => SigResult,
+            S => SigRegSrc,
+            O => SigRegDataIn
+        );
+
+    -- Adder (PC + 4)
+    PCAdder : ENTITY work.UnsignedAdder64Bit
+        PORT MAP(
+            A => SigPC,
+            B => Four,
+            sum => SigPCPlus4
+        );
+
+    -- Adder (PC + Imm)
+    PCAdder : ENTITY work.UnsignedAdder64Bit
+        PORT MAP(
+            A => SigPC,
+            B => SigImmediate,
+            sum => SigBranchAdd
+        );
+
+    -- PC Control
+    PCControl : ENTITY work.PCControl
+        PORT MAP(
+            PCSrc => SigPCSrc,
+            ZeroFlag => SigZeroFlag,
+            PCPlus4 => SigPCPlus4,
+            BranchAdd => SigBranchAdd,
+            ALUResult => SigResult,
+            NextPC => SigNextPC
+        );
+
+    -- PC Register 
+    PCRegister : ENTITY work.PCRegister
+        PORT MAP(
+            Clk => Clk,
+            Clear => Reset,
+            DataIn => SigNextPC,
+            Q => SigPc
+        );
+
+    -- Instruction Address Signals
+    InstructionAddress <= SigPc;
 
 END Struct;
