@@ -5,6 +5,7 @@ USE IEEE.numeric_std.ALL;
 ENTITY MainControl IS
     PORT (
         Instruction : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+        Branch : OUT STD_LOGIC;
         MemRead : OUT STD_LOGIC;
         MemWrite : OUT STD_LOGIC;
         RegWrite : OUT STD_LOGIC;
@@ -17,6 +18,7 @@ ENTITY MainControl IS
 END ENTITY MainControl;
 
 ARCHITECTURE Struct OF MainControl IS
+    SIGNAL SigBranch : STD_LOGIC;
     SIGNAL SigMemRead : STD_LOGIC;
     SIGNAL SigMemWrite : STD_LOGIC;
     SIGNAL SigRegWrite : STD_LOGIC;
@@ -39,6 +41,7 @@ BEGIN
     Control : ENTITY work.Control
         PORT MAP(
             Opcode => SigOpcode,
+            Branch => SigBranch;
             MemRead => SigMemRead,
             MemWrite => SigMemWrite,
             RegWrite => SigRegWrite,
@@ -46,15 +49,18 @@ BEGIN
             PCSrc => SigPCSrc,
             ALUSrcA => SigALUSrcA,
             ALUSrcB => SigALUSrcB,
-            ALUOpcode => SigALUOpcode);
+            ALUOpcode => SigALUOpcode
+        );
 
     ALUControl : ENTITY work.ALUControl
         PORT MAP(
             funct3 => SigFunct3,
             funct7 => SigFunct7,
             ALUOpcode => SigALUOpcode,
-            ALUSelect => SigALUSelect);
+            ALUSelect => SigALUSelect
+        );
 
+    Branch <= SigBranch;
     MemRead <= SigMemRead;
     MemWrite <= SigMemWrite;
     RegWrite <= SigRegWrite;

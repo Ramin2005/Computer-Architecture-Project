@@ -5,6 +5,7 @@ USE IEEE.numeric_std.ALL;
 ENTITY Control IS
     PORT (
         Opcode : IN STD_LOGIC_VECTOR(6 DOWNTO 0);
+        Branch : OUT STD_LOGIC;
         MemRead : OUT STD_LOGIC;
         MemWrite : OUT STD_LOGIC;
         RegWrite : OUT STD_LOGIC;
@@ -22,6 +23,7 @@ BEGIN
     PROCESS (Opcode)
     BEGIN
 
+        Branch <= '0';
         MemRead <= '0';
         MemWrite <= '0';
         RegWrite <= '0';
@@ -84,6 +86,7 @@ BEGIN
                 ---------- Control Transfer ----------
                 -- BRANCH
             WHEN "1100011" =>
+                Branch <= '1';
                 PCSrc <= "01";
                 ALUOpcode <= "001";
 

@@ -4,56 +4,52 @@ USE IEEE.numeric_std.ALL;
 
 ENTITY CPU IS
     PORT (
+        -- Reset & Clock Signal
         CLK : IN STD_LOGIC;
         Reset : IN STD_LOGIC;
-        MemoryReadData : IN STD_LOGIC_VECTOR(63 DOWNTO 0);
-        MemoryReadEnable : OUT STD_LOGIC;
-        MemoryWriteData : OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
+
+        -- Data Memory
+        MemoryAddress : OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
+        MemoryMask : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);
         MemoryWriteEnable : OUT STD_LOGIC;
-        MemoryAddress : OUT STD_LOGIC_VECTOR(63 DOWNTO 0)
+        MemoryWriteData : OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
+        MemoryReadEnable : OUT STD_LOGIC;
+        MemoryReadData : IN STD_LOGIC_VECTOR(63 DOWNTO 0);
+
+        -- Instruction Memory
+        InstructionAddress : OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
+        InstructionIn : IN STD_LOGIC_VECTOR(63 DOWNTO 0)
     );
 END ENTITY CPU;
 
 ARCHITECTURE Struct OF CPU IS
 
-    -- Control Signals
-    SIGNAL Branch : STD_LOGIC;
-    SIGNAL MemRead : STD_LOGIC;
-    SIGNAL MemWrite : STD_LOGIC;
-    SIGNAL RegSrc : STD_LOGIC_VECTOR(1 DOWNTO 0);
-    SIGNAL RegWrite : STD_LOGIC;
-    SIGNAL ALUSrc : STD_LOGIC;
-    SIGNAL ALUOp : STD_LOGIC_VECTOR(2 DOWNTO 0);
-    SIGNAL ALUSelect : STD_LOGIC_VECTOR(5 DOWNTO 0);
-    SIGNAL ZeroFlag : STD_LOGIC;
+    -- Control Unit Signals
+    SIGNAL SigBranch : STD_LOGIC;
+    SIGNAL SigMemRead : STD_LOGIC;
+    SIGNAL SigMemWrite : STD_LOGIC;
+    SIGNAL SigRegWrite : STD_LOGIC;
+    SIGNAL SigRegSrc : STD_LOGIC_VECTOR(1 DOWNTO 0);
+    SIGNAL SigPCSrc : STD_LOGIC_VECTOR(1 DOWNTO 0);
+    SIGNAL SigALUSrcA : STD_LOGIC;
+    SIGNAL SigALUSrcB : STD_LOGIC;
+    SIGNAL SigALUSelect : STD_LOGIC_VECTOR(5 DOWNTO 0);
 
-    -- Derived Control Signals
-    SIGNAL RegWriteEnable : STD_LOGIC;
-    SIGNAL BranchTaken : STD_LOGIC;
-    SIGNAL PCSel : STD_LOGIC_VECTOR(1 DOWNTO 0);
-
-    -- Data Lines
-    SIGNAL Instruction : STD_LOGIC_VECTOR(31 DOWNTO 0);
-    SIGNAL PCRegisterOut : STD_LOGIC_VECTOR(63 DOWNTO 0);
-    SIGNAL PCPlus4 : STD_LOGIC_VECTOR(63 DOWNTO 0);
-    SIGNAL BranchTarget : STD_LOGIC_VECTOR(63 DOWNTO 0);
-    SIGNAL JumpRegTarget : STD_LOGIC_VECTOR(63 DOWNTO 0);
-    SIGNAL NextPC : STD_LOGIC_VECTOR(63 DOWNTO 0);
-    SIGNAL RegisterDataInput : STD_LOGIC_VECTOR(63 DOWNTO 0);
-    SIGNAL RegisterDataOutA : STD_LOGIC_VECTOR(63 DOWNTO 0);
-    SIGNAL RegisterDataOutB : STD_LOGIC_VECTOR(63 DOWNTO 0);
-    SIGNAL ImmData : STD_LOGIC_VECTOR(63 DOWNTO 0);
-    SIGNAL ALUInputA : STD_LOGIC_VECTOR(63 DOWNTO 0);
-    SIGNAL ALUInputB : STD_LOGIC_VECTOR(63 DOWNTO 0);
-    SIGNAL ALUOutput : STD_LOGIC_VECTOR(63 DOWNTO 0);
-
-    CONSTANT Four : STD_LOGIC_VECTOR(63 DOWNTO 0) := (2 => '1', OTHERS => '0');
 BEGIN
 
-    PROCESS (CLK)
-
-    BEGIN
-
-    END PROCESS;
+    -- Control Unit
+    ControlUnit : ENTITY work.MainControl
+        PORT MAP(
+            Instruction => InstructionIn,
+            Branch => SigBranch,
+            MemRead => SigMemRead,
+            MemWrite => SigMemWrite,
+            RegWrite => SigRegWrite,
+            RegSrc => SigRegSrc,
+            PCSrc => SigPCSrc,
+            ALUSrcA => SigALUSrcA,
+            ALUSrcB => SigALUSrcB,
+            ALUSelect => SigALUSelect
+        );
 
 END Struct;
