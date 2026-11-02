@@ -134,7 +134,7 @@ BEGIN
                             ALUSelect <= "001111";
                         END IF;
 
-                    WHEN "111" =>
+                    WHEN OTHERS =>
                         IF funct7 = "0000000" THEN
                             -- AND
                             ALUSelect <= "010100";
@@ -143,9 +143,6 @@ BEGIN
                             -- REMU
                             ALUSelect <= "010000";
                         END IF;
-
-                    WHEN OTHERS =>
-                        NULL;
                 END CASE;
 
                 --------------
@@ -212,12 +209,9 @@ BEGIN
                         -- OR
                         ALUSelect <= "010101";
 
-                    WHEN "111" =>
+                    WHEN OTHERS =>
                         -- AND
                         ALUSelect <= "010100";
-
-                    WHEN OTHERS =>
-                        NULL;
                 END CASE;
 
                 --------------
@@ -458,7 +452,7 @@ BEGIN
                             ALUSelect <= "110101";
                         END IF;
 
-                    WHEN "111" =>
+                    WHEN OTHERS =>
                         IF funct7 = "0000000" THEN
                             -- ROR
                             ALUSelect <= "100111";
@@ -475,14 +469,11 @@ BEGIN
                             -- SH3ADD
                             ALUSelect <= "110110";
                         END IF;
-
-                    WHEN OTHERS =>
-                        NULL;
                 END CASE;
 
                 --------------
                 -- ALUOpcode "111"
-            WHEN "111" =>
+            WHEN OTHERS =>
                 CASE funct3 IS
                     WHEN "000" =>
                         -- NAND
@@ -512,16 +503,10 @@ BEGIN
                         -- ROR
                         ALUSelect <= "100111";
 
-                    WHEN "111" =>
+                    WHEN OTHERS =>
                         -- ANDN
                         ALUSelect <= "010111";
-
-                    WHEN OTHERS =>
-                        NULL;
                 END CASE;
-
-            WHEN OTHERS =>
-                NULL;
         END CASE;
     END PROCESS;
 
