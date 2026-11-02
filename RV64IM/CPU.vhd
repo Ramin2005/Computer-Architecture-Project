@@ -132,10 +132,12 @@ BEGIN
     MemoryReadEnable <= SigMemRead;
 
     -- Mux 3 (Register File Src)
-    Mux3 : ENTITY work.MUX64B2To1
+    Mux3 : ENTITY work.MUX64B4To1
         PORT MAP(
-            A => SigRegDataOutB,
-            B => SigResult,
+            A => SigResult,
+            B => MemoryReadData,
+            C => SigPCPlus4,
+            D => SigImmediate,
             S => SigRegSrc,
             O => SigRegDataIn
         );
