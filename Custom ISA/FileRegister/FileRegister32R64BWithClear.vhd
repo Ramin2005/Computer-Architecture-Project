@@ -1,0 +1,46 @@
+LIBRARY IEEE;
+USE IEEE.std_logic_1164.ALL;
+USE IEEE.numeric_std.ALL;
+
+ENTITY FileRegister32R32BWithClear IS
+    PORT (
+        Clk : IN STD_LOGIC;
+        Clear : IN STD_LOGIC;
+        AddressA, AddressB, AddressW : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
+        WriteEnable : IN STD_LOGIC;
+        DataIn : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+        DataOutA, DataOutB : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
+    );
+END ENTITY FileRegister32R32BWithClear;
+
+ARCHITECTURE Struct OF FileRegister32R32BWithClear IS
+
+    TYPE DataArray IS ARRAY (31 DOWNTO 1) OF STD_LOGIC_VECTOR(31 DOWNTO 0);
+    SIGNAL Data : DataArray;
+
+BEGIN
+
+    PROCESS (Clk, Clear, WriteEnable, AddressW)
+    BEGIN
+
+        IF rising_edge(Clk) AND Clear = '1' THEN
+
+            Data <= (OTHERS => (OTHERS => '0'));
+
+        ELSIF rising_edge(Clk) AND WriteEnable = '1' THEN
+
+            IF unsigned(AddressW) > 0 THEN
+                Data(to_integer(unsigned(AddressW))) <= DataIn;
+            END IF;
+
+        END IF;
+
+    END PROCESS;
+
+    DataOutA <= (OTHERS => '0') WHEN AddressA = "00000" ELSE
+        Data(to_integer(unsigned(AddressA)));
+
+    DataOutB <= (OTHERS => '0') WHEN AddressB = "00000" ELSE
+        Data(to_integer(unsigned(AddressB)));
+
+END Struct;
