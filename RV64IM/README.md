@@ -2,7 +2,7 @@
 
 A 64-bit single-cycle RISC-V processor written in VHDL. It implements **RV64I**, the **M** extension, a 40-instruction **custom** extension (32 custom-0 R-type and 8 custom-1 I-type instructions) and a small set of **Zba / Zbb / Zbs** instructions.
 
-> **Status.** The processor core is complete: control path (`Control`, `ALUControl`, `MainControl`), ALU, immediate generator, register file, PC logic (`PCControl`, `PCRegister`, adders), multiplexers and the top level `CPU.vhd`. The **instruction memory and the data memory are not part of the files**: `CPU` exposes them as ports (section 4.1). The data memory must also do the load size / sign extension (section 4.2). No test bench and no simulator run yet (sections 6 and 8).
+> **Status.** The processor core is complete: control path (`Control`, `ALUControl`, `MainControl`), ALU, immediate generator, register file, PC logic (`PCControl`, `PCRegister`, adders), multiplexers and the top level `CPU.vhd`. The **instruction memory and the data memory are not part of the CPU files**: `CPU` exposes them as ports (section 4.1). The data memory must also do the load size / sign extension (section 4.2). A self-checking test bench with its own memory models is in `Testbench/` (section 11). It passed in GHDL (`--std=08`) with 0 errors (section 8).
 
 Companion spreadsheet: `RV64IM_Implementable_Instructions.xlsx` (every instruction with its control signals, the ALU map, unsupported instructions and pseudo-instructions). It is not included in the current archive.
 
@@ -23,11 +23,15 @@ Companion spreadsheet: `RV64IM_Implementable_Instructions.xlsx` (every instructi
 | `PC Control/PCControl.vhd` | Next-PC selection (PC + 4, branch target, JAL target, JALR target) |
 | `CPU.vhd` | Top level: connects all blocks, exposes the instruction and data memory ports |
 | *(external)* | Instruction memory and data memory (including load/store size and extension) |
+| `Testbench/CPU_TB.vhd` | Self-checking test bench with simulation memory models (section 11) |
+| `Testbench/TestProgram.vhd` | Generated package: test program, expected results, initial and final RAM |
+| `Testbench/GenerateTest.py` | Generator of `TestProgram.vhd` and golden instruction-set model |
+| `Testbench/Demo/` | Demo program `demo.S` (fibonacci, factorial, gcd, collatz, primes, sqrt) with `demo.hex`, `demo.lst` and `RunDemo.py` (section 11.5) |
 
 ### Entity ports
 
 | Entity | Port | Dir | Type |
-|---|---|---|---|
+|---|---|:-:|---|
 | ALU | A | IN | `STD_LOGIC_VECTOR(63 DOWNTO 0)` |
 | ALU | B | IN | `STD_LOGIC_VECTOR(63 DOWNTO 0)` |
 | ALU | S | IN | `STD_LOGIC_VECTOR(5 DOWNTO 0)` |
@@ -107,7 +111,7 @@ Companion spreadsheet: `RV64IM_Implementable_Instructions.xlsx` (every instructi
 ### RV64I
 
 | Instruction | Opcode | funct3 | funct7 | Imm | Requires |
-|---|---|---|---|---|---|
+|---|:-:|:-:|:-:|---|---|
 | ADD | `0110011` | `000` | `0000000` | - | Core datapath only |
 | ADDI | `0010011` | `000` | `-` | I | Core datapath only |
 | ADDIW | `0011011` | `000` | `-` | I | Core datapath only |
@@ -164,7 +168,7 @@ Companion spreadsheet: `RV64IM_Implementable_Instructions.xlsx` (every instructi
 ### M extension
 
 | Instruction | Opcode | funct3 | funct7 | Imm | Requires |
-|---|---|---|---|---|---|
+|---|:-:|:-:|:-:|:-:|---|
 | DIV | `0110011` | `100` | `0000001` | - | Core datapath only |
 | DIVU | `0110011` | `101` | `0000001` | - | Core datapath only |
 | DIVUW | `0111011` | `101` | `0000001` | - | Core datapath only |
@@ -182,7 +186,7 @@ Companion spreadsheet: `RV64IM_Implementable_Instructions.xlsx` (every instructi
 ### Custom-0 (R-type, opcode `0001011`)
 
 | Instruction | Opcode | funct3 | funct7 | Imm | Requires |
-|---|---|---|---|---|---|
+|---|:-:|:-:|:-:|---|---|
 | ABS | `0001011` | `010` | `0100000` | - | Core datapath only |
 | ABSW | `0001011` | `011` | `0100000` | - | Core datapath only |
 | ANDN | `0001011` | `011` | `0100001` | - | Core datapath only |
@@ -222,7 +226,7 @@ Companion spreadsheet: `RV64IM_Implementable_Instructions.xlsx` (every instructi
 ### Custom-1 (I-type, opcode `0101011`)
 
 | Instruction | Opcode | funct3 | funct7 | Imm | Requires |
-|---|---|---|---|---|---|
+|---|:-:|:-:|:-:|:--|---|
 | ANDNI | `0101011` | `111` | `-` | I | Core datapath only |
 | NANDI | `0101011` | `000` | `-` | I | Core datapath only |
 | NORI | `0101011` | `001` | `-` | I | Core datapath only |
@@ -235,7 +239,7 @@ Companion spreadsheet: `RV64IM_Implementable_Instructions.xlsx` (every instructi
 ### Added standard encodings
 
 | Instruction | Opcode | funct3 | funct7 | Imm | Requires |
-|---|---|---|---|---|---|
+|---|:-:|:-:|:-:|---|---|
 | ADD.UW | `0111011` | `000` | `0000100` | - | Core datapath only |
 | BCLRI | `0010011` | `001` | `010010 (Inst[31:26])` | I (shift 6-bit) | Core datapath only |
 | BEXTI | `0010011` | `101` | `010010 (Inst[31:26])` | I (shift 6-bit) | Core datapath only |
@@ -250,7 +254,7 @@ Full descriptions of every instruction are in the spreadsheet.
 ### 3.1 Signal encodings
 
 | Signal | Value | Meaning |
-|---|---|---|
+|:--|:-:|---|
 | RegSrc | `00` | ALU result |
 | RegSrc | `01` | Data memory |
 | RegSrc | `10` | PC + 4 |
@@ -275,7 +279,7 @@ Full descriptions of every instruction are in the spreadsheet.
 ### 3.2 Control: opcode to signals
 
 | Opcode | Name | MemRead | MemWrite | RegWrite | RegSrc | PCSrc | ALUSrcA | ALUSrcB | ALUOpcode |
-|---|---|---|---|---|---|---|---|---|---|
+|:-:|---|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
 | `0110011` | -- OP | 0 | 0 | 1 | `00` | `00` | 0 | 0 | `010` |
 | `0111011` | OP 32-Bit | 0 | 0 | 1 | `00` | `00` | 0 | 0 | `100` |
 | `0010011` | -- OP IMM | 0 | 0 | 1 | `00` | `00` | 0 | 1 | `011` |
@@ -316,17 +320,17 @@ Full descriptions of every instruction are in the spreadsheet.
 ### 3.5 ALU operation map (ALUSelect)
 
 | S | Operation | S | Operation | S | Operation | S | Operation |
-|---|---|---|---|---|---|---|---|
-| 0 (`000000`) | ADD | 16 (`010000`) | REMU | 32 (`100000`) | SLTU | 48 (`110000`) | MAXU |
-| 1 (`000001`) | SUB | 17 (`010001`) | REMW | 33 (`100001`) | SLE | 49 (`110001`) | CLZ |
-| 2 (`000010`) | ADDW | 18 (`010010`) | REMUW | 34 (`100010`) | SLEU | 50 (`110010`) | CTZ |
-| 3 (`000011`) | SUBW | 19 (`010011`) | NOT | 35 (`100011`) | SLL | 51 (`110011`) | CPOP |
-| 4 (`000100`) | ABS | 20 (`010100`) | AND | 36 (`100100`) | SRL | 52 (`110100`) | SH1ADD |
-| 5 (`000101`) | ABSW | 21 (`010101`) | OR | 37 (`100101`) | SRA | 53 (`110101`) | SH2ADD |
-| 6 (`000110`) | MUL | 22 (`010110`) | XOR | 38 (`100110`) | ROL | 54 (`110110`) | SH3ADD |
-| 7 (`000111`) | MULH | 23 (`010111`) | ANDN | 39 (`100111`) | ROR | 55 (`110111`) | SH4ADD |
-| 8 (`001000`) | MULHSU | 24 (`011000`) | ORN | 40 (`101000`) | SLLW | 56 (`111000`) | SH8ADD |
-| 9 (`001001`) | MULHU | 25 (`011001`) | XORN | 41 (`101001`) | SRLW | 57 (`111001`) | ADDUW |
+|:-:|---|:-:|---|:-:|---|:-:|---|
+| 00 (`000000`) | ADD | 16 (`010000`) | REMU | 32 (`100000`) | SLTU | 48 (`110000`) | MAXU |
+| 01 (`000001`) | SUB | 17 (`010001`) | REMW | 33 (`100001`) | SLE | 49 (`110001`) | CLZ |
+| 02 (`000010`) | ADDW | 18 (`010010`) | REMUW | 34 (`100010`) | SLEU | 50 (`110010`) | CTZ |
+| 03 (`000011`) | SUBW | 19 (`010011`) | NOT | 35 (`100011`) | SLL | 51 (`110011`) | CPOP |
+| 04 (`000100`) | ABS | 20 (`010100`) | AND | 36 (`100100`) | SRL | 52 (`110100`) | SH1ADD |
+| 05 (`000101`) | ABSW | 21 (`010101`) | OR | 37 (`100101`) | SRA | 53 (`110101`) | SH2ADD |
+| 06 (`000110`) | MUL | 22 (`010110`) | XOR | 38 (`100110`) | ROL | 54 (`110110`) | SH3ADD |
+| 07 (`000111`) | MULH | 23 (`010111`) | ANDN | 39 (`100111`) | ROR | 55 (`110111`) | SH4ADD |
+| 08 (`001000`) | MULHSU | 24 (`011000`) | ORN | 40 (`101000`) | SLLW | 56 (`111000`) | SH8ADD |
+| 09 (`001001`) | MULHU | 25 (`011001`) | XORN | 41 (`101001`) | SRLW | 57 (`111001`) | ADDUW |
 | 10 (`001010`) | MULW | 26 (`011010`) | NAND | 42 (`101010`) | SRAW | 58 (`111010`) | BSET |
 | 11 (`001011`) | DIV | 27 (`011011`) | NOR | 43 (`101011`) | ROLW | 59 (`111011`) | BCLR |
 | 12 (`001100`) | DIVU | 28 (`011100`) | XNOR | 44 (`101100`) | RORW | 60 (`111100`) | BINV |
@@ -385,8 +389,7 @@ Implementing them in hardware needs a wider ALUSelect (7 bits) or giving up `XOR
 The core is complete. Remaining work:
 
 - [ ] Instruction memory and data memory models (or wrappers for the target board). The data memory must implement the byte / halfword / word / doubleword access and the sign or zero extension described in section 4.2.
-- [ ] Test bench with at least one test per instruction group (ALU operations, loads and stores of every size, every branch in taken and not-taken form, JAL, JALR, LUI, AUIPC, reset behaviour).
-- [ ] First simulation and synthesis run (see section 8).
+- [ ] First simulation run of `Testbench/CPU_TB.vhd` and a synthesis run (see sections 8 and 11).
 
 ## 7. Pseudo-instructions
 
@@ -397,7 +400,9 @@ These need no hardware: `NOP`, `MV`, `NOT`, `NEG`, `NEGW`, `SEXT.W`, `ZEXT.W` (`
 - **Control path**: `Control` and `ALUControl` were checked with a script that translates the VHDL decode logic (CASE / IF) and runs it for every instruction in section 2 (don't-care fields tried with several values). All 114 instructions (and the ALU alias `ADDUW`) give the expected ALUSelect, and every opcode gives the signals of section 3.2. This README and `Supported Instructions.md` list the same 114 instructions with the same opcode and funct3.
 - **Branch logic in `CPU.vhd`**: `Branch = (NOT Zero) XOR (Instruction(14) AND Instruction(12))` was checked for BEQ, BNE, BLT, BGE, BLTU and BGEU with edge operands (0, 1, -1, most negative, most positive); all give the correct taken / not-taken result.
 - **ALU**: every select code `0..63` chooses the result signal of the same name. All operation definitions were reviewed by reading; no functional error was found.
-- **Not done**: no HDL simulator or synthesis run yet, and the top level `CPU.vhd` was reviewed by reading only. Test in simulation: DIV and DIVW for most-negative / -1 (must return the dividend, REM must return 0), all shift and rotate edge amounts, and the reset sequence (the PC register and the register file are cleared only on a rising clock edge with `Reset = 1`, so their contents are undefined before the first clear).
+- **Test bench**: `Testbench/GenerateTest.py` runs the complete test program on its own golden model of the instruction set. Every one of the 114 instructions is executed, every result slot is written exactly once, and sample values were checked by hand (fibonacci(90), 20!, gcd, sort, division by zero and overflow cases). `CPU_TB.vhd` with `TestProgram.vhd` was compiled and run with GHDL (`--std=08`): all checks passed in all three runs, 0 errors, simulation end at 234276 ns (about 23400 cycles). The count printed at the end (9200 results) includes the results stored before the mid-run reset of run 3. `Demo_TB.vhd` has not been run yet.
+- **Simulation**: the test bench covers DIV and DIVW overflow and division by zero, all shift and rotate edge amounts, and the reset sequence (power-up, reset after a finished run, reset in the middle of the program). All passed in GHDL.
+- **Not done**: synthesis run, `Demo_TB.vhd` run, and a simulation with a second simulator. The `NUMERIC_STD ... metavalue detected` warnings printed at time 0 come from the PC and the registers being undefined until the first clock edge with `Reset = 1`; they are harmless and can be hidden with `ghdl -r --std=08 CPU_TB --ieee-asserts=disable`.
 
 ## 9. Known limitations
 
@@ -414,4 +419,4 @@ These need no hardware: `NOP`, `MV`, `NOT`, `NEG`, `NEGW`, `SEXT.W`, `ZEXT.W` (`
 1. Choose a free (opcode, funct3, funct7) slot. Custom-0 funct7 `0100010` has free funct3 values `011` to `111`; custom-1 has none left.
 2. Add a decode row in `ALUControl.vhd` using an existing ALU code (or add the operation to `ALU.vhd`).
 3. If the instruction needs a new immediate format, extend `ImmGen.vhd`; if it uses a new opcode, add it to `Control.vhd`.
-4. Update the spreadsheet and re-run the checks.
+4. Update the spreadsheet and re-run the checks. In `Testbench/GenerateTest.py` add the encoding to `ISA`, the semantics to `ALU`, the operation to the matching list (`R_OPS`, `I_OPS`, ...), then run `python3 Testbench/GenerateTest.py` to regenerate `TestProgram.vhd`.

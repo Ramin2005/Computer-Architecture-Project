@@ -9,7 +9,7 @@ Supported: 52 RV64I, 13 M, 4 Zba, 18 Zbb, 8 Zbs, 19 custom, total 114 instructio
 ## RV64I (52)
 
 | Instruction | opcode | funct3 | funct7 / upper bits |
-|---|---|---|---|
+|:--|:-:|:-:|:-:|
 | LB | `0000011` | `000` | - |
 | LH | `0000011` | `001` | - |
 | LW | `0000011` | `010` | - |
@@ -68,7 +68,7 @@ ECALL and EBREAK differ only in `[31:20]`. FENCE, ECALL and EBREAK are decoded b
 ## M (13)
 
 | Instruction | opcode | funct3 | funct7 / upper bits |
-|---|---|---|---|
+|---|:-:|:-:|:-:|
 | MUL | `0110011` | `000` | `[31:25] = 0000001` |
 | MULH | `0110011` | `001` | `[31:25] = 0000001` |
 | MULHSU | `0110011` | `010` | `[31:25] = 0000001` |
@@ -86,7 +86,7 @@ ECALL and EBREAK differ only in `[31:20]`. FENCE, ECALL and EBREAK are decoded b
 ## Zba (4 of 8)
 
 | Instruction | opcode | funct3 | funct7 / upper bits |
-|---|---|---|---|
+|:--|:-:|:-:|:-:|
 | SH1ADD | `0001011` | `101` | `[31:25] = 0100001` |
 | SH2ADD | `0001011` | `110` | `[31:25] = 0100001` |
 | SH3ADD | `0001011` | `111` | `[31:25] = 0100001` |
@@ -97,7 +97,7 @@ ADD.UW is the same instruction as ADDUW. ADD.UW uses the official encoding. SH1A
 ## Zbb (18 of 24)
 
 | Instruction | opcode | funct3 | funct7 / upper bits |
-|---|---|---|---|
+|---|:-:|:-:|:-:|
 | XNOR | `0001011` | `011` | `[31:25] = 0000000` |
 | ROL | `0001011` | `110` | `[31:25] = 0000000` |
 | ROR | `0001011` | `111` | `[31:25] = 0000000` |
@@ -122,7 +122,7 @@ RORIW uses the official encoding. All other Zbb instructions here use the custom
 ## Zbs (8)
 
 | Instruction | opcode | funct3 | funct7 / upper bits |
-|---|---|---|---|
+|---|:-:|:-:|:-:|
 | BSET | `0001011` | `100` | `[31:25] = 0100000` |
 | BCLR | `0001011` | `101` | `[31:25] = 0100000` |
 | BINV | `0001011` | `110` | `[31:25] = 0100000` |
@@ -139,7 +139,7 @@ BSETI, BCLRI, BINVI and BEXTI use the official encoding. BSET, BCLR, BINV and BE
 Not part of any RISC-V extension. Opcode `0001011` (custom-0) is R-type, opcode `0101011` (custom-1) is I-type.
 
 | Instruction | opcode | funct3 | funct7 / upper bits |
-|---|---|---|---|
+|---|:-:|:-:|:-:|
 | NOT | `0001011` | `000` | `[31:25] = 0000000` |
 | NAND | `0001011` | `001` | `[31:25] = 0000000` |
 | NOR | `0001011` | `010` | `[31:25] = 0000000` |
