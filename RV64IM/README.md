@@ -2,9 +2,9 @@
 
 A 64-bit single-cycle RISC-V processor written in VHDL. It implements **RV64I**, the **M** extension, a 40-instruction **custom** extension (32 custom-0 R-type and 8 custom-1 I-type instructions) and a small set of **Zba / Zbb / Zbs** instructions.
 
-> **Status.** The processor core is complete: control path (`Control`, `ALUControl`, `MainControl`), ALU, immediate generator, register file, PC logic (`PCControl`, `PCRegister`, adders), multiplexers and the top level `CPU.vhd`. The **instruction memory and the data memory are not part of the CPU files**: `CPU` exposes them as ports (section 4.1). The data memory must also do the load size / sign extension (section 4.2). A self-checking test bench with its own memory models is in `Testbench/` (section 11). It passed in GHDL (`--std=08`) with 0 errors (section 8).
+## Datapath architecture
 
-Companion spreadsheet: `RV64IM_Implementable_Instructions.xlsx` (every instruction with its control signals, the ALU map, unsupported instructions and pseudo-instructions). It is not included in the current archive.
+![RV64IM CPU datapath](CPU_Datapath.png)
 
 ## 1. Files
 
@@ -22,6 +22,7 @@ Companion spreadsheet: `RV64IM_Implementable_Instructions.xlsx` (every instructi
 | `PC Register/PCRegister.vhd` | Program counter register (synchronous clear) |
 | `PC Control/PCControl.vhd` | Next-PC selection (PC + 4, branch target, JAL target, JALR target) |
 | `CPU.vhd` | Top level: connects all blocks, exposes the instruction and data memory ports |
+| `cpu_datapath.svg` | CPU datapath architecture diagram |
 | *(external)* | Instruction memory and data memory (including load/store size and extension) |
 | `Testbench/CPU_TB.vhd` | Self-checking test bench with simulation memory models (section 11) |
 | `Testbench/TestProgram.vhd` | Generated package: test program, expected results, initial and final RAM |
