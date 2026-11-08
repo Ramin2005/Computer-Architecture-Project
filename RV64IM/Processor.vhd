@@ -2,7 +2,7 @@ LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
 USE IEEE.numeric_std.ALL;
 
-ENTITY CPU IS
+ENTITY Processor IS
     PORT (
         -- Reset & Clock Signal
         Clk : IN STD_LOGIC;
@@ -20,9 +20,9 @@ ENTITY CPU IS
         InstructionAddress : OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
         InstructionIn : IN STD_LOGIC_VECTOR(31 DOWNTO 0)
     );
-END ENTITY CPU;
+END ENTITY Processor;
 
-ARCHITECTURE Struct OF CPU IS
+ARCHITECTURE Struct OF Processor IS
     -- Constant 4
     CONSTANT Four : STD_LOGIC_VECTOR(63 DOWNTO 0) := (2 => '1', OTHERS => '0');
 
